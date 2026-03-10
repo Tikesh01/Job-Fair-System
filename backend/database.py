@@ -1,7 +1,7 @@
-import mysql.connector
+from mysql.connector import pooling
 
 class Db:
-    def __init__(self,database:str, host='localhost',user="root", password= "1qaz,xds"):
+    def __init__(self, host='localhost',user="root", password= "1qaz,xds", database:str=None):
         """
         Parameters:
             database: None | str
@@ -9,23 +9,17 @@ class Db:
             user = "root" | str
             password = "1qaz,xds" | str
         """
+        self.__pool= pooling.MySQLConnectionPool(pool_name="mypool",pool_size=5,host=host, user=user, password=password, database=database)
+
+
+    def query(self, Q:str)->list|None:
+        conn = self.__pool.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(Q)
+        ls = cursor.fetchall()
+        conn.close()
+        cursor.close()
+
+        if ls:
+            return ls
         
-        self.__host = host
-        self.__user = user
-        self.__password = password
-        self.__database = database 
-        
-    
-    def __get_cursor(self):
-        db = mysql.connector.connect(host = self.__host, user = self.__user, password = self.__password, database = self.__database if self.__database != None else self.__database)
-        
-        return db.cursor()
-    
-    def query(self, Q:str):
-        c = self.__get_cursor()
-        c.execute(Q)
-        ls = []
-        for r in c:
-            ls.append(r)
-            
-        return ls
