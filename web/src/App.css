@@ -57,7 +57,11 @@ html, body, #root {
   position: fixed;
   bottom: 30px;
   right: 20px;
-  width: min(92vw, 680px);
+  width: auto;
+  height: auto;
+  min-width: 250px;
+  max-width: 50%;
+  padding: 0 1em;
   z-index: 999;
   display: flex;
   flex-direction: column;
@@ -82,6 +86,6 @@ html, body, #root {
   background: linear-gradient(135deg, #c32727, #e85f5f);
 }
 
-.notification-item.info {
-  background: linear-gradient(135deg, #1d7ff5, #5b8ff4);
+.notification-item.warning {
+  background: linear-gradient(135deg, #ff9d00, #f1d608);
 }
