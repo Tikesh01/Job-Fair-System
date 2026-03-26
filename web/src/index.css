@@ -5,6 +5,7 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
+  --border-style: 0.5px solid rgba(255, 255, 255, 0.185);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;

@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import './Signup.css';
 import api from '../api/axiosapi'
-import { useNotification } from '../contexts/NotificationContext';
 import signupImage from '../assets/signup-bro.svg';
+import { useNavigate } from 'react-router-dom'
+import { useNotification } from '../contexts/NotificationContext';
 
 export default function Signup() {
+  const {notify} = useNotification('')
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    role: '',
+    role: 'candidate',
     email: '',
     otp: '',
     password: '',
@@ -15,7 +18,6 @@ export default function Signup() {
   });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
-  const { notify } = useNotification()
 
   const roleOptions = [
     { value: 'candidate', label: 'Candidate', icon: '🎓' },
@@ -57,11 +59,14 @@ export default function Signup() {
           
           if (resp.status === 200) {
             setStep(2);
-            } else {
-            newErrors.email = resp.data?.detail;
+          }
+          else {
+            const errDetail = resp.data?.detail;
+            newErrors.email = typeof errDetail === 'string' ? errDetail : 'Failed to send OTP. Please try again.';
           }
         } catch (error) {
-          newErrors.email = error.response?.data?.detail;
+          const errDetail = error.response?.data?.detail;
+          newErrors.email = typeof errDetail === 'string' ? errDetail : 'Failed to send OTP. Please try again.';
         }
       }
     } else if (step === 2) {
@@ -75,10 +80,12 @@ export default function Signup() {
           if (resp.status === 200) {
             setStep(3);
           } else {
-            newErrors.otp = resp?.data?.detail||'Invalid OTP. Please try again.';
+            const errDetail = resp.data?.detail;
+            newErrors.otp = typeof errDetail === 'string' ? errDetail : 'Invalid OTP. Please try again.';
           }
         } catch (error) {
-          newErrors.otp = error.response?.data?.detail||'Failed to verify OTP. Please try again.';
+          const errDetail = error.response?.data?.detail;
+          newErrors.otp = typeof errDetail === 'string' ? errDetail : 'Failed to verify OTP. Please try again.';
         }
       }
     } else if (step === 3) {
@@ -106,13 +113,18 @@ export default function Signup() {
       };
       const resp = await api.post("/register", payload);
       if (resp.status === 200) {
-          notify('success', "Signed Up Successfully")
-        
+          notify('success', "Signed Up Successfully");
+          navigate('/login', { replace: true });
+          return;
       } else {
-        notify('error', resp?.data?.detail);
+        const errDetail = resp.data?.detail;
+        const errMsg = typeof errDetail === 'string' ? errDetail : 'Registration failed. Please try again.';
+        notify('error', errMsg);
       }
     } catch (error) {
-        notify('error', error.response?.data?.detail);
+        const errDetail = error.response?.data?.detail;
+        const errMsg = typeof errDetail === 'string' ? errDetail : 'Registration failed. Please try again.';
+        notify('error', errMsg);
       
     }
   };
@@ -129,11 +141,11 @@ export default function Signup() {
        
 
         <div className="progress-bar">
-          <div className={`progress-step ${step >= 1 ? 'active' : ''}`}>1</div>
+          <div className={`progress-step ${step >= 1 ? 'active' : ''}`}>{step > 1 ? <i className="fas fa-user-check"></i>:<i className="fas fa-user-plus"></i>} </div>
           <div className={`progress-line ${step >= 2 ? 'active' : ''}`}></div>
-          <div className={`progress-step ${step >= 2 ? 'active' : ''}`}>2</div>
+          <div className={`progress-step ${step >= 2 ? 'active' : ''}`}><i className="fas fa-comment-sms"></i></div>
           <div className={`progress-line ${step >= 3 ? 'active' : ''}`}></div>
-          <div className={`progress-step ${step >= 3 ? 'active' : ''}`}>3</div>
+          <div className={`progress-step ${step >= 3 ? 'active' : ''}`}><i className="fas fa-lock"></i></div>
         </div>
       </div>
       <div className="signup-wrapper">
@@ -146,7 +158,7 @@ export default function Signup() {
             <div className="form-step active">
               <h2>Let's get started</h2>
 
-              <div className="form-group">
+              <div className="form-group" >
                 <label>Select Your Role</label>
                 <div className={`role-options ${errors.role ? 'error' : ''}`}>
                   {roleOptions.map((role) => (
@@ -286,7 +298,7 @@ export default function Signup() {
             </div>
           )}
           <p className="signup-footer">
-            Already have an account? <a href="#login" className="login-link">Sign in</a>
+            Already have an account? <a href="/login" className="login-link">Sign in</a>
           </p>
         </form>
       </div>

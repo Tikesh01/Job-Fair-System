@@ -2,16 +2,17 @@
   background: rgba(17, 17, 17, 0.288);
   backdrop-filter: blur(10px);
   color: white;
-  font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
   border-radius: 30px;
-  border: rgba(255, 255, 255, 0.288) 0.7px solid;
+  border: var(--border-style);
   overflow: auto;
+  width: auto;
 }
 .signup-container-header {
   text-align: center;
   padding: 1em 0;
   color: white;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.356);
+  border-bottom: var(--border-style);
+
 }
 
 .signup-container-header h1 {
@@ -68,16 +69,6 @@
   background: #fda500;
 }
 
-.signup-wrapper {
-  /* background: #ffffff; */
-  display: flex;
-  justify-content:center;
-  align-items: center;
-  gap:3em;
-  width: 100%;
-  animation: slideUp 0.6s ease-out;
-}
-
 @keyframes slideUp {
   from {
     opacity: 0;
@@ -88,13 +79,26 @@
     transform: translateY(0);
   }
 }
+
+.signup-wrapper {
+  /* background: #ffffff; */
+  animation: slideUp 0.6s ease-out;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8%;
+}
 .signup-rafiki-img{
   width: 40%;
- /* background: #000; */
+  /* background: #794e4e; */
+ /* float: left; */
 }
 
 .signup-form {
   /* background: #503131; */
+  /* float: right; */
+  width: 35%;
 }
 
 .form-step {
@@ -144,7 +148,7 @@
   width: calc( 100% - 3.1rem);
   padding: 1rem 1.5rem;
   border: 1px solid #ffffff5b;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 0.95rem;
   font-family: inherit;
   transition: all 0.3s ease;
@@ -155,23 +159,33 @@
 
 .role-options {
   display: flex;
-  align-items: center;
-  justify-content: center ;
+  justify-content: space-between;
+  align-items: stretch;
   gap: 0.75rem;
-
+  width: 100%;
 }
 
 .role-option {
+  flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.65rem 0.8rem;
-  border: 0.5px solid #ffffff60;
-  border-radius: 8px;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.75rem 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.86rem;
-  font-weight: 600;
+  color: #e2e8f0;
+  background: rgba(17, 17, 17, 0.35);
+  min-width: 0;
+}
+
+.role-option:hover {
+  transform: translateY(-1px);
+  border-color: #667eea;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 }
 
 .role-option input {
@@ -179,14 +193,21 @@
 }
 
 .role-option .role-icon {
-  font-size: 1rem;
+  font-size: 1.4rem;
   line-height: 1;
+}
+
+.role-option .role-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: capitalize;
 }
 
 .role-option.selected {
   border-color: #fda500;
   color: #fda500;
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.15);
+  background: rgba(253, 165, 0, 0.12);
+  box-shadow: 0 0 0 2px rgba(253, 165, 0, 0.22);
 }
 
 .role-options.error .role-option {
@@ -201,14 +222,13 @@
 .select-input:focus {
   outline: none;
   border-color: #667eea;
-  background: rgba(255, 255, 255, 0.301);
+  background: rgba(82, 81, 81, 0.301);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .form-input.error,
 .select-input.error {
   border-color: #f56565;
-  background: #fff5f5;
 }
 
 .select-input {
@@ -234,11 +254,14 @@
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
+
 }
 
 .password-input-wrapper .form-input {
   flex: 1;
   padding-right: 2.5rem;
+  /* background: #6d5c5c; */
 }
 
 .toggle-password {
@@ -358,9 +381,8 @@
 }
 
 .btn-secondary {
-
   color: #fda500;
-  border: 2px solid #fda500;
+  border: 1px solid #fda500;
 }
 
 .btn-secondary:hover {
@@ -421,14 +443,17 @@
   .progress-line {
     width: 20px;
   }
- 
+  .signup-wrapper{
+    display: contents;
+  }
 
   .signup-rafiki-img{
     display: none;
   }
 
   .signup-form {
-    padding: 1.5rem;
+    /* padding: 1.5rem; */
+    width: 100%;
   }
 
   .form-step h2 {
@@ -447,6 +472,4 @@
   .button-group .btn {
     width: 100%;
   }
-
-  
 }

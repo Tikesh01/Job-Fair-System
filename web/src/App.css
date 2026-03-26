@@ -5,8 +5,8 @@ html, body{
   padding: 0;
   padding-top: 70px; 
   background: rgba(24, 23, 23, 0.884);
-  color: #1f2940;
-  font-family: Inter, Roboto;
+  color: #ffffffef;
+  font-family: 'Inter', 'Roboto', 'Segoe UI';
 }
 
 #root {

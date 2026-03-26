@@ -7,7 +7,7 @@
   z-index: 1000;
   background: rgba(17, 17, 17, 0.288);
   backdrop-filter: blur(10px);
-  border-bottom: rgba(255, 255, 255, 0.288) 0.7px solid;
+  border-bottom: var(--border-style);
   font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
   transition: all 0.3s ease;
   
@@ -68,49 +68,29 @@
 .navbar-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
-}
+  justify-content: space-between;
+  gap: 2rem;
 
-/* Buttons - Matching Signup Styles */
-.btn {
-  padding: 0.6rem 1.2rem;
-  border: none;
-  border-radius: 10px;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-family: inherit;
-  font-weight: 600;
 }
-
-.btn-primary {
-  background: #fda500;
-  color: white;
-  box-shadow: 0 4px 15px #fda40070;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(253, 164, 0, 0.5);
-}
-
-.btn-primary:active {
-  transform: translateY(0);
-}
-
-.btn-secondary {
+.navbar-actions .btn-primary-nav{
+  border: #fda500 0.5px solid;
   color: #fda500;
-  border: 2px solid #fda500;
-  background: transparent;
-}
+  font-weight: lighter;
+  padding: 0.5em 1em;
+  border-radius: 8px;
 
-.btn-secondary:hover {
-  background: #fda500;
-  color: white;
 }
+.navbar-actions .btn-primary-nav:hover{
+  border-color: rgb(2, 173, 252);
+  color: rgb(2, 173, 252);
+}
+.navbar-actions .btn-secondary-nav{
+  color: #fda500;
+}
+.navbar-actions .btn-secondary-nav:hover{
+  color: rgb(2, 173, 252);
 
+}
 /* Mobile Menu Toggle */
 .navbar-toggle {
   display: none;

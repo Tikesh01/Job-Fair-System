@@ -24,8 +24,8 @@ export default function Navbar() {
         </div>
 
         <div className="navbar-actions">
-          <button className="btn btn-secondary">Sign In</button>
-          <button className="btn btn-primary">Sign Up</button>
+          <a href="/login" className="btn-secondary-nav"> <i className="fas fa-arrow-right-to-bracket"></i> Login</a>
+          <a href='/signup' className="btn-primary-nav">Sign Up</a>
         </div>
 
         <div className="navbar-toggle" onClick={toggleMenu}>

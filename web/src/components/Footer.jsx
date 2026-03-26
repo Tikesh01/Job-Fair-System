@@ -124,7 +124,7 @@ export default function Footer() {
                   value={feedback.message}
                   onChange={handleInputChange}
                   className="form-textarea"
-                  rows="3"
+                  rows="5"
                   required
                 ></textarea>
               </div>

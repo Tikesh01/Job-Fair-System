@@ -1,8 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 import uvicorn
 from database import Db
-from models import otpRequest, otpVerify, UserRegister
+from models import otpRequest, otpVerify, UserRegister, loginRequest
 import random
 import string
 import re
@@ -11,8 +13,14 @@ from datetime import datetime, timedelta
 app = FastAPI(title="Job-Fair-System",debug=True)
 app.add_middleware(CORSMiddleware,allow_origins=["http://localhost:5173"],allow_methods=["*"])
 
-db = Db(database="job_fair_sys")
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=422,
+        content={"detail": "Invalid request data. Please check your input."},
+    )
 
+db = Db(database="job_fair_sys")
 
 
 def validate_email(email: str) -> bool:
@@ -21,7 +29,7 @@ def validate_email(email: str) -> bool:
         return False
     return bool(email_re.fullmatch(email))
 
-def validate_role(role:str) -> bool:
+def validate_role(role:str):
     all_roles = ["candidate", 'company', 'university']
     if role in all_roles:
         return role.strip()
@@ -41,6 +49,24 @@ def verify_email_otp(email:str, otp:str):
     if current_time>=user['created_at'] +timedelta(minutes=10):
         return False
     return True
+
+def check_user_exist(role, email, pw):
+    q = "SELECT email FROM "+role+" WHERE email=%s AND password=%s"
+    result = db.query(q, params=(email,pw,))
+
+    return len(result)>0
+
+@app.post("/login")
+def login(request:loginRequest):
+    role = request.role
+    email = request.email 
+    pw = request.password
+    
+    if not validate_role(role) or not validate_email(email):
+        raise HTTPException(status_code=400,detail="Invalid Role or Email!")
+    
+    if not check_user_exist(role, email, pw):
+        raise HTTPException(status_code=400,detail="User does not exist")
 
 @app.post("/generate/otp")
 def generate_otp(request: otpRequest):
@@ -103,22 +129,24 @@ def register_user(request: UserRegister):
     password = request.password
     cnfm_password = request.cnfm_password
 
-    if not role or not validate_email(email) or not verify_email_otp(email,otp):
-        raise HTTPException(status_code=400, detail="Wrong Email, Role or OTP")
+    if len(password) > 30:
+        raise HTTPException(status_code=400, detail="Password exceeds maximum length")
+
+    if not role or not validate_email(email) or not verify_email_otp(email, otp):
+        raise HTTPException(status_code=400, detail="Invalid email, role, or OTP")
     
     if password != cnfm_password:
-        raise HTTPException(status_code=400, detail="Passwords dont match")
+        raise HTTPException(status_code=400, detail="Passwords do not match")
     
-    if isDuplicateUser(email) == True:
-        raise HTTPException(status_code=429, detail="Email Already Exists")
+    if isDuplicateUser(email):
+        raise HTTPException(status_code=409, detail="Email already registered")
 
     if not isStrongPass(password):
-        raise HTTPException(status_code=400, detail="Password should be Stronger")
+        raise HTTPException(status_code=400, detail="Password must be 8+ chars with uppercase, lowercase, digit, and special character")
     
-    q = "INSERT INTO "+role+"(email, password) VALUES(%s, %s)"
-
-    db.query(Q=q,params=(email,password, ), commit=True)
-    return {"message": "You are registered successfully"}
+    q = "INSERT INTO " + role + "(email, password) VALUES(%s, %s)"
+    db.query(Q=q, params=(email, password), commit=True)
+    return {"message": "Registration successful"}
 
 if __name__ == "__main__":
     uvicorn.run(app="main:app",host='localhost', reload=True)

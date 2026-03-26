@@ -14,3 +14,8 @@ class UserRegister(BaseModel):
     role: str
     password: str
     cnfm_password: str
+
+class loginRequest(BaseModel):
+    role:str
+    email:EmailStr
+    password:str
