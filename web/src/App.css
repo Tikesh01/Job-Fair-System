@@ -4,7 +4,7 @@ html, body{
   margin: 0;
   padding: 0;
   padding-top: 70px; 
-  background: rgba(24, 23, 23, 0.884);
+  background: rgba(0, 0, 0, 0.288);
   color: #ffffffef;
   font-family: 'Inter', 'Roboto', 'Segoe UI';
 }
@@ -15,4 +15,15 @@ html, body{
   margin: 0 auto;
   padding: 2rem 3rem;
   text-align: center;
+}@media (max-width: 400px){
+  #root{
+    padding: 2rem;
+    
+  }
+}
+@media (max-width: 340px){
+  #root{
+    padding: 1rem;
+    
+  }
 }

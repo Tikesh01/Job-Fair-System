@@ -1,4 +1,6 @@
 .login-container{
+    background: rgba(255, 255, 255, 0.034);
+    backdrop-filter: blur(15px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -6,6 +8,7 @@
     border: var(--border-style);
     border-radius: 20px;
     padding: 1em 0;
+    
 }
 .login-rafiki-image{
     width: 40%;
@@ -17,6 +20,13 @@
 .login-wrapper-header{
     font-size: larger;
     padding-bottom: 1em;
+    display: flex;
+    flex-direction: column;
+}
+.login-wrapper-header p{
+    font-size: smaller;
+    color: gray;
+    margin-top: -1.3em;
 }
 .login-form{
     width: 100%;

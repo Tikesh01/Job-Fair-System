@@ -1,12 +1,10 @@
 :root {
-  font-family: 'Roboto','Inter',Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', 'Roboto', Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
   --border-style: 0.5px solid rgba(255, 255, 255, 0.185);
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

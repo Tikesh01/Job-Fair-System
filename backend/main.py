@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -8,10 +8,25 @@ from models import otpRequest, otpVerify, UserRegister, loginRequest
 import random
 import string
 import re
+import jwt
 from datetime import datetime, timedelta
+from functools import wraps
+from dotenv import load_dotenv,dotenv_values
+import os
 
-app = FastAPI(title="Job-Fair-System",debug=True)
-app.add_middleware(CORSMiddleware,allow_origins=["http://localhost:5173"],allow_methods=["*"])
+load_dotenv()
+
+# app Confings
+debug = os.getenv('DEBUG')
+host = os.getenv('HOST')
+port = int(os.getenv('PORT'))
+
+#Frontend config
+frontend_origin = os.getenv('FRONTEND_ORIGIN')
+allow_credentials = os.getenv("ALLOW_CREDENTIAL")
+
+app = FastAPI(title="Job-Fair-System",debug=debug)
+app.add_middleware(CORSMiddleware,allow_origins=[frontend_origin],allow_methods=["*"], allow_credentials=allow_credentials)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
@@ -20,8 +35,18 @@ async def validation_exception_handler(request, exc):
         content={"detail": "Invalid request data. Please check your input."},
     )
 
-db = Db(database="job_fair_sys")
+#Databse config
+db_host = os.getenv("DB_HOST")
+db_port = os.getenv("DB_PORT")
+db_user = os.getenv("DB_USER")
+db_password = os.getenv("DB_PASSWORD")
+db_active_database = os.getenv('DB_ACTVE_DATABASE')
+db = Db(host=db_host, port=db_port, user=db_user, password=db_password,  database=db_active_database)
 
+#jwt token config
+secret_key = os.getenv('SECRET_KEY')
+algorithm = os.getenv('ALGORITHM')
+expiry_minutes = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES'))
 
 def validate_email(email: str) -> bool:
     email_re = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
@@ -51,10 +76,43 @@ def verify_email_otp(email:str, otp:str):
     return True
 
 def check_user_exist(role, email, pw):
-    q = "SELECT email FROM "+role+" WHERE email=%s AND password=%s"
+    q = f"SELECT {role}_id as user_id, email FROM {role} WHERE email=%s AND password=%s"
     result = db.query(q, params=(email,pw,))
+    return result[0] if result else None
 
-    return len(result)>0
+def create_access_token(payload: dict, expiry_minutes: timedelta ):
+    to_encode = payload.copy()
+    expire = datetime.now() + expiry_minutes
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, secret_key, algorithm=algorithm)
+    return encoded_jwt
+
+def require_roles(*allowed_roles):
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(request: Request, *args, **kwargs):
+            try:
+                token = request.cookies.get("token")
+                if not token:
+                    raise HTTPException(status_code=401, detail="Invalid or missing token")
+
+                try:
+                    payload = jwt.decode(token, secret_key, algorithms=[algorithm])
+                except jwt.ExpiredSignatureError:
+                    raise HTTPException(status_code=401, detail="Token expired")
+                except jwt.InvalidTokenError:
+                    raise HTTPException(status_code=401, detail="Invalid token")
+
+                user_role = payload.get("role")
+                if user_role not in allowed_roles:
+                    raise HTTPException(status_code=403, detail="You are not Authorized")
+                request.state.user = payload
+            except Exception as e:
+                raise HTTPException(status_code=401,detail="Need to Login")
+            return func(request, *args, **kwargs)
+        return wrapper
+    return decorator
+
 
 @app.post("/login")
 def login(request:loginRequest):
@@ -65,8 +123,29 @@ def login(request:loginRequest):
     if not validate_role(role) or not validate_email(email):
         raise HTTPException(status_code=400,detail="Invalid Role or Email!")
     
-    if not check_user_exist(role, email, pw):
-        raise HTTPException(status_code=400,detail="User does not exist")
+    user = check_user_exist(role, email, pw)
+    if not user:
+        raise HTTPException(status_code=400,detail="Invalid credentials")
+    
+    payload = { 
+        "sub": str(user['user_id']), 
+        "role": role, 
+        "email": email
+    }
+    minutes = timedelta(minutes=expiry_minutes)
+    access_token = create_access_token(payload=payload, expiry_minutes=minutes)
+    response = JSONResponse({"message": "Login successful"})
+    response.set_cookie(key="token", value=access_token , secure=False, samesite="strict", max_age=3600)
+    response.set_cookie(key="role", value=role, secure=False, samesite="strict", max_age=3600)
+    return response 
+
+@app.post('/logout')
+@require_roles("candidate","university","company")
+def logout(request:Request):
+    response = JSONResponse({"message": "Logged out successfully"})
+    response.delete_cookie("token")
+    response.delete_cookie("role")
+    return response
 
 @app.post("/generate/otp")
 def generate_otp(request: otpRequest):
@@ -149,4 +228,4 @@ def register_user(request: UserRegister):
     return {"message": "Registration successful"}
 
 if __name__ == "__main__":
-    uvicorn.run(app="main:app",host='localhost', reload=True)
+    uvicorn.run(app="main:app",host=host,port=port, reload=True)

@@ -20,9 +20,9 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
 
   const roleOptions = [
-    { value: 'candidate', label: 'Candidate', icon: '🎓' },
-    { value: 'university', label: 'University', icon: '🏫' },
-    { value: 'company', label: 'Company', icon: '🏢' },
+    { value: 'candidate', label: 'Candidate', icon: 'fa-graduation-cap' },
+    { value: 'university', label: 'University', icon: 'fa-university' },
+    { value: 'company', label: 'Company', icon: 'fa-building' },
   ];
 
   const handleInputChange = (e) => {
@@ -170,7 +170,7 @@ export default function Signup() {
                         checked={formData.role === role.value}
                         onChange={handleInputChange}
                       />
-                      <span className="role-icon">{role.icon}</span>
+                      <i className={`fas ${role.icon}`}></i>{" "}
                       <span className="role-label">{role.label}</span>
                     </label>
                   ))}
@@ -179,7 +179,7 @@ export default function Signup() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="email">Email Address</label>
+                <label htmlFor="email"><i className="fas fa-envelope"></i> Email Address</label>
                 <input
                   type="email"
                   id="email"
@@ -205,7 +205,7 @@ export default function Signup() {
               <p className="form-subtitle">We've sent a verification code to {formData.email}</p>
 
               <div className="form-group">
-                <label htmlFor="otp">Enter OTP</label>
+                <label htmlFor="otp"><i className="fas fa-key"></i> Enter OTP</label>
                 <input
                   type="text"
                   id="otp"
@@ -241,7 +241,7 @@ export default function Signup() {
               <p className="form-subtitle">Make it strong and unique</p>
 
               <div className="form-group">
-                <label htmlFor="password">Password</label>
+                <label htmlFor="password"><i className="fas fa-lock"></i> Password</label>
                 <div className="password-input-wrapper">
                   <input
                     type={showPassword ? 'text' : 'password'}
@@ -264,7 +264,7 @@ export default function Signup() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="confirmPassword">Confirm Password</label>
+                <label htmlFor="confirmPassword"><i className="fas fa-lock"></i> Confirm Password</label>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="confirmPassword"

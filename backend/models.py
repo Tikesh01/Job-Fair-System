@@ -18,4 +18,4 @@ class UserRegister(BaseModel):
 class loginRequest(BaseModel):
     role:str
     email:EmailStr
-    password:str
+    password: str

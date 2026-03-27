@@ -1,7 +1,7 @@
 from mysql.connector import pooling, Error
 
 class Db:
-    def __init__(self, host='localhost', user='root', password='1qaz,xds', database: str = None):
+    def __init__(self, host:str,port:int, user:str, password:str, database: str = None):
         """
         Parameters:
             database: None | str

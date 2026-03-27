@@ -12,6 +12,7 @@ function Login(){
     const [userRole, setRole] = useState('candidate')
     const [errors, setErrors] = useState({})
     const [password, setPassword] = useState('')
+
     const roleOptions = [
         { value: 'candidate', label: 'Candidate', icon: '🎓' },
         { value: 'university', label: 'University', icon: '🏫' },
@@ -32,7 +33,6 @@ function Login(){
     const validateEmail = (email) =>{
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return regex.test(email);
-        
     }
     const handleSubmit = async (event)=>{
         event.preventDefault()
@@ -49,8 +49,9 @@ function Login(){
                 const response = await api.post("/login", payload)
                 if(response.status === 200){
                     setErrors({})
-                    notify('success', "You Are Logged In Successfully!")
-                    navigate('/')
+                    notify('success', "You Are Logged In Successfully")
+                    return navigate('/')
+
                 }
             } catch (error) {
                 const errorMessage = error.response?.data?.detail || "An error occurred"
@@ -70,6 +71,7 @@ function Login(){
             <div className="login-form-wrapper">
                 <div className="login-wrapper-header">
                     <h2>Welcome Back</h2>
+                    <p>Login to Get Authorized</p>
                 </div>
                 <form onSubmit={handleSubmit} className="login-form signup">
                     <div className="form-group" >

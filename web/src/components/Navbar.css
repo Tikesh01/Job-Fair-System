@@ -8,7 +8,6 @@
   background: rgba(17, 17, 17, 0.288);
   backdrop-filter: blur(10px);
   border-bottom: var(--border-style);
-  font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
   transition: all 0.3s ease;
   
 }

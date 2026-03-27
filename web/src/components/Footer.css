@@ -8,7 +8,6 @@
   backdrop-filter: blur(10px);
   border-top: var(--border-style);
   color: white;
-  font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
 }
 
 .footer-container {
