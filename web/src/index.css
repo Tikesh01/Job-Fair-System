@@ -17,22 +17,24 @@ a {
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
+ color: #fda500;
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
 
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
 }
-
+textarea{
+  width: 100%;
+  border-radius: 8px;
+  padding: 0.8em 1.4em;
+}
+input, select{
+    width: 100%;
+    border-radius: 8px;
+    padding: 0.6em 1.2em;
+}
 button {
   border-radius: 8px;
   border: 1px solid transparent;

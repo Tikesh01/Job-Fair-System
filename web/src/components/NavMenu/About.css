@@ -1,0 +1,144 @@
+.about-container {
+  width: 85%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 0;
+}
+
+.about-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.about-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #ffc107, #ff9500);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.about-header p {
+  font-size: 1.2rem;
+  color: #c0c0c0;
+}
+
+.about-section {
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.about-section h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: #ffc107;
+}
+
+.about-section p {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #e0e0e0;
+}
+
+.about-values {
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.about-values h2 {
+  font-size: 1.8rem;
+  margin-bottom: 2rem;
+  color: #ffc107;
+  text-align: center;
+}
+
+.values-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.value-card {
+  padding: 2rem;
+  background: rgba(255, 193, 7, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.value-card:hover {
+  transform: translateY(-5px);
+  border-color: #ffc107;
+  box-shadow: 0 8px 20px rgba(255, 193, 7, 0.2);
+}
+
+.value-icon {
+  font-size: 3rem;
+  color: #ffc107;
+  margin-bottom: 1rem;
+}
+
+.value-card h3 {
+  font-size: 1.3rem;
+  margin-bottom: 0.75rem;
+}
+
+.value-card p {
+  font-size: 0.95rem;
+  color: #c0c0c0;
+  line-height: 1.6;
+}
+
+.benefits-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.benefits-list li {
+  padding: 1.5rem;
+  background: rgba(255, 193, 7, 0.1);
+  border-radius: 8px;
+  border-left: 4px solid #ffc107;
+  font-size: 1.05rem;
+  color: #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.benefits-list li:hover {
+  background: rgba(255, 193, 7, 0.2);
+  transform: translateX(5px);
+}
+
+@media (max-width: 768px) {
+  .about-header h1 {
+    font-size: 2rem;
+  }
+
+  .about-section,
+  .about-values {
+    padding: 1.5rem;
+  }
+
+  .about-section h2,
+  .about-values h2 {
+    font-size: 1.5rem;
+  }
+
+  .values-grid {
+    gap: 1.5rem;
+  }
+
+  .value-card {
+    padding: 1.5rem;
+  }
+}

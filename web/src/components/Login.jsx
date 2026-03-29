@@ -50,7 +50,7 @@ function Login(){
                 if(response.status === 200){
                     setErrors({})
                     notify('success', "You Are Logged In Successfully")
-                    return navigate('/')
+                    return navigate('/Dashboard')
 
                 }
             } catch (error) {

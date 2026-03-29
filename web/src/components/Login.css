@@ -26,13 +26,12 @@
 .login-wrapper-header p{
     font-size: smaller;
     color: gray;
-    margin-top: -1.3em;
 }
 .login-form{
     width: 100%;
 }
 .login-form input{
-    width: calc( 100% - 3.1rem);
+    width: 100% ;
     padding: 1rem 1.5rem;
     border: 1px solid #ffffff5b;
     border-radius: 8px;

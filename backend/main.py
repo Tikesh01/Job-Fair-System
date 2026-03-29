@@ -11,7 +11,7 @@ import re
 import jwt
 from datetime import datetime, timedelta
 from functools import wraps
-from dotenv import load_dotenv,dotenv_values
+from dotenv import load_dotenv
 import os
 
 load_dotenv()
@@ -40,7 +40,7 @@ db_host = os.getenv("DB_HOST")
 db_port = os.getenv("DB_PORT")
 db_user = os.getenv("DB_USER")
 db_password = os.getenv("DB_PASSWORD")
-db_active_database = os.getenv('DB_ACTVE_DATABASE')
+db_active_database = os.getenv('DB_ACTIVE_DATABASE')
 db = Db(host=db_host, port=db_port, user=db_user, password=db_password,  database=db_active_database)
 
 #jwt token config

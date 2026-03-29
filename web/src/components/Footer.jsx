@@ -2,6 +2,7 @@ import { useState } from 'react';
 import './Footer.css';
 
 export default function Footer() {
+
   const [feedback, setFeedback] = useState({
     name: '',
     email: '',
@@ -55,7 +56,7 @@ export default function Footer() {
 
           <div className="footer-section">
             <h4>Quick Links</h4>
-            <ul>
+            <ul type='none'>
               <li><a href="#about">About Us</a></li>
               <li><a href="#jobs">Browse Jobs</a></li>
               <li><a href="#companies">Companies</a></li>
@@ -65,7 +66,7 @@ export default function Footer() {
 
           <div className="footer-section">
             <h4>Support</h4>
-            <ul>
+            <ul type='none'>
               <li><a href="#help">Help Center</a></li>
               <li><a href="#privacy">Privacy Policy</a></li>
               <li><a href="#terms">Terms of Service</a></li>
@@ -137,7 +138,7 @@ export default function Footer() {
         </div>
 
         <div className="footer-bottom">
-          <p>&copy; 2024 JobFair. All rights reserved.</p>
+          <p>&copy; 2026 JobFair. All rights reserved.</p>
           <p>Made with ❤️ for job seekers and employers</p>
         </div>
       </div>

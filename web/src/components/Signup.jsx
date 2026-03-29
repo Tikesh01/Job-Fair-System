@@ -133,8 +133,8 @@ export default function Signup() {
     setStep(step - 1);
   };
 
-  return (
-    <div className="signup-container">
+  return (<>
+      <div className="signup-container">
       <div className="signup-container-header">
           <h1>Create Your Account</h1>
           <p>Join the Job Fair Community</p>
@@ -303,5 +303,6 @@ export default function Signup() {
         </form>
       </div>
     </div>
-  );
+  
+  </>);
 }

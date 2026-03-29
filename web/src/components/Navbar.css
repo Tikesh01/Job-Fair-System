@@ -134,10 +134,6 @@
     visibility: visible;
   }
 
-  .navbar-actions {
-    display: none;
-  }
-
   .navbar-toggle {
     display: flex;
   }
@@ -152,6 +148,10 @@
 
   .navbar-toggle.active .bar:nth-child(3) {
     transform: rotate(45deg) translate(-5px, -6px);
+  }
+  .smaller-nav-menu{
+    display: block;
+    
   }
 }
 
