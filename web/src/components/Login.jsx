@@ -1,9 +1,11 @@
 import './Login.css'
+import './RoleOption.css'
 import loginImg  from '../assets/login-bro.svg'
 import { useState } from 'react'
 import api from '../api/axiosapi'
 import { useNotification } from '../contexts/NotificationContext'
 import { useNavigate } from 'react-router-dom'
+import {FaBuilding, FaGraduationCap, FaUniversity, } from 'react-icons/fa';
 
 function Login(){
     const navigate = useNavigate()
@@ -14,9 +16,9 @@ function Login(){
     const [password, setPassword] = useState('')
 
     const roleOptions = [
-        { value: 'candidate', label: 'Candidate', icon: '🎓' },
-        { value: 'university', label: 'University', icon: '🏫' },
-        { value: 'company', label: 'Company', icon: '🏢' },
+        { value: 'candidate', label: 'Candidate', icon: <FaGraduationCap /> },
+        { value: 'university', label: 'University', icon: <FaUniversity /> },
+        { value: 'company', label: 'Company', icon: <FaBuilding /> },
     ];
     const handleChange = (event) => {
         const { name, value } = event.target
@@ -36,6 +38,7 @@ function Login(){
     }
     const handleSubmit = async (event)=>{
         event.preventDefault()
+        setErrors({});
         const newErrors = {}
         if(!validateEmail(email))newErrors.email="Enter Valid Email Id"
         if(!userRole)newErrors.role="Select a Role"
@@ -49,8 +52,9 @@ function Login(){
                 const response = await api.post("/login", payload)
                 if(response.status === 200){
                     setErrors({})
+                    window.dispatchEvent(new Event('authUpdated'))
                     notify('success', "You Are Logged In Successfully")
-                    return navigate('/Dashboard')
+                    return navigate('/dashboard')
 
                 }
             } catch (error) {
@@ -73,7 +77,7 @@ function Login(){
                     <h2>Welcome Back</h2>
                     <p>Login to Get Authorized</p>
                 </div>
-                <form onSubmit={handleSubmit} className="login-form signup">
+                <form onSubmit={handleSubmit} className="login-form">
                     <div className="form-group" >
                         <label><i className="fas fa-users"></i> Select Your Role</label>
                         <div className={`role-options ${errors.role ? 'error' : ''}`}>
@@ -86,7 +90,7 @@ function Login(){
                                 checked={userRole === role.value}
                                 onChange={handleChange}
                             />
-                            <span className="role-icon">{role.icon}</span>
+                            <span className="role-icon" title={role.label}>{role.icon}</span>
                             <span className="role-label">{role.label}</span>
                             </label>
                         ))}
@@ -118,7 +122,9 @@ function Login(){
                         {errors.password && <span className="error-massage">{errors.password}</span>}
                     </div>
                     {errors.error && <span className="error-massage">{errors.error}</span>}
-                    <button type="submit" className="btn btn-primary">Login</button>
+                   
+                    <button type="submit" className="btn btn-s btn-primary">Login</button>
+                    
                 </form>
                 
                 <p className="login-footer">

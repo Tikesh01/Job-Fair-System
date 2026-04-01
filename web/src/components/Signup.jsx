@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import './Signup.css';
+import './RoleOption.css';
 import api from '../api/axiosapi'
 import signupImage from '../assets/signup-bro.svg';
 import { useNavigate } from 'react-router-dom'
 import { useNotification } from '../contexts/NotificationContext';
+import { FaBuilding, FaGraduationCap, FaUniversity } from 'react-icons/fa';
 
 export default function Signup() {
   const {notify} = useNotification('')
@@ -20,9 +22,9 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
 
   const roleOptions = [
-    { value: 'candidate', label: 'Candidate', icon: 'fa-graduation-cap' },
-    { value: 'university', label: 'University', icon: 'fa-university' },
-    { value: 'company', label: 'Company', icon: 'fa-building' },
+    { value: 'candidate', label: 'Candidate', icon: <FaGraduationCap /> },
+    { value: 'university', label: 'University', icon: <FaUniversity /> },
+    { value: 'company', label: 'Company', icon: <FaBuilding /> },
   ];
 
   const handleInputChange = (e) => {
@@ -48,6 +50,7 @@ export default function Signup() {
     const newErrors = {};
 
     if (step === 1) {
+      setErrors({});
       if (!formData.role) newErrors.role = 'Please select a role';
       if (!formData.email) newErrors.email = 'Email is required';
       else if (!validateEmail(formData.email)) newErrors.email = 'Invalid email format';
@@ -70,6 +73,7 @@ export default function Signup() {
         }
       }
     } else if (step === 2) {
+      setErrors({});
       if (!formData.otp) newErrors.otp = 'OTP is required';
       else if (formData.otp.length !== 6) newErrors.otp = 'OTP must be 6 digits';
 
@@ -89,6 +93,7 @@ export default function Signup() {
         }
       }
     } else if (step === 3) {
+      setErrors({});
       if (!formData.password) newErrors.password = 'Password is required';
       else if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters';
       if (!formData.confirmPassword) newErrors.confirmPassword = 'Please confirm your password';
@@ -104,6 +109,7 @@ export default function Signup() {
 
   const handleSubmit = async () => {
     try {
+      setErrors({});
       const payload = { 
         email: formData.email, 
         otp:formData.otp, 
@@ -125,7 +131,6 @@ export default function Signup() {
         const errDetail = error.response?.data?.detail;
         const errMsg = typeof errDetail === 'string' ? errDetail : 'Registration failed. Please try again.';
         notify('error', errMsg);
-      
     }
   };
 
@@ -170,12 +175,12 @@ export default function Signup() {
                         checked={formData.role === role.value}
                         onChange={handleInputChange}
                       />
-                      <i className={`fas ${role.icon}`}></i>{" "}
+                      <i className='role-icon'>{role.icon}</i>
                       <span className="role-label">{role.label}</span>
                     </label>
                   ))}
                 </div>
-                {errors.role && <span className="error-message">{errors.role}</span>}
+                {errors.role && <span className="error-massage">{errors.role}</span>}
               </div>
 
               <div className="form-group">
@@ -189,10 +194,10 @@ export default function Signup() {
                   onChange={handleInputChange}
                   className={`form-input ${errors.email ? 'error' : ''}`}
                 />
-                {errors.email && <span className="error-message">{errors.email}</span>}
+                {errors.email && <span className="error-massage">{errors.email}</span>}
               </div>
 
-              <button type="button" onClick={handleNext} className="btn btn-primary">
+              <button type="button" onClick={handleNext} className="btn btn-s btn-primary">
                 Continue
               </button>
             </div>
@@ -216,14 +221,14 @@ export default function Signup() {
                   onChange={handleInputChange}
                   className={`form-input otp-input ${errors.otp ? 'error' : ''}`}
                 />
-                {errors.otp && <span className="error-message">{errors.otp}</span>}
+                {errors.otp && <span className="error-massage">{errors.otp}</span>}
               </div>
 
               <p className="resend-text">
                 Didn't receive the code? <a href="#resend" className="resend-link">Resend OTP</a>
               </p>
 
-              <div className="button-group">
+              <div className="btn-group">
                 <button type="button" onClick={handleBack} className="btn btn-secondary">
                   Back
                 </button>
@@ -260,7 +265,7 @@ export default function Signup() {
                     {showPassword ? '👁️' : '👁️‍🗨️'}
                   </button>
                 </div>
-                {errors.password && <span className="error-message">{errors.password}</span>}
+                {errors.password && <span className="error-massage">{errors.password}</span>}
               </div>
 
               <div className="form-group">
@@ -274,7 +279,7 @@ export default function Signup() {
                   onChange={handleInputChange}
                   className={`form-input ${errors.confirmPassword ? 'error' : ''}`}
                 />
-                {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
+                {errors.confirmPassword && <span className="error-massage">{errors.confirmPassword}</span>}
               </div>
 
               <div className="password-requirements">
@@ -287,7 +292,7 @@ export default function Signup() {
                 </ul>
               </div>
 
-              <div className="button-group">
+              <div className="btn-group">
                 <button type="button" onClick={handleBack} className="btn btn-secondary">
                   Back
                 </button>

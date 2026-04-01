@@ -17,7 +17,7 @@ class Db:
             password=password,
             database=database,
         )
-
+    
     def query(self, Q: str, params: tuple | dict | None = None, commit: bool = False) -> list:
         """Execute a parameterized query safely.
 
@@ -52,5 +52,20 @@ class Db:
                 cursor.close()
             if conn is not None:
                 conn.close()
+
+    def getTable(self, table:str,columns:tuple=(), where:str='', limit:int=None):
+        s = ','.join(columns)
+        if len(columns) == 0:
+            s = '*'
+
+        q = f'SELECT {s} FROM {table}'
+
+        if where:
+            q+= " WHERE "+where
+        if limit:
+            q += f' LIMIT {limit}'  
+
+        q += ';'
+        return self.query(q)
 
         

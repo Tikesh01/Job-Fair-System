@@ -137,6 +137,7 @@ def login(request:loginRequest):
     response = JSONResponse({"message": "Login successful"})
     response.set_cookie(key="token", value=access_token , secure=False, samesite="strict", max_age=3600)
     response.set_cookie(key="role", value=role, secure=False, samesite="strict", max_age=3600)
+    response.set_cookie(key="expiry_time", value=datetime.now()+minutes, secure=False, samesite="strict", max_age=3600)
     return response 
 
 @app.post('/logout')
@@ -226,6 +227,13 @@ def register_user(request: UserRegister):
     q = "INSERT INTO " + role + "(email, password) VALUES(%s, %s)"
     db.query(Q=q, params=(email, password), commit=True)
     return {"message": "Registration successful"}
+
+
+@app.get('/companies', response_model=list)
+def get_company_list():
+    companies = db.getTable('company')
+    print(companies)
+    return companies
 
 if __name__ == "__main__":
     uvicorn.run(app="main:app",host=host,port=port, reload=True)

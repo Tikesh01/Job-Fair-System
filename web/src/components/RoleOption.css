@@ -1,0 +1,111 @@
+.role-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* flex-wrap: wrap; */
+  width: 100%;
+}
+
+.role-options.error {
+  border: 1px solid rgba(255, 59, 48, 0.5);
+  background: rgba(255, 59, 48, 0.05);
+}
+
+.role-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.role-option:hover {
+  border-color: rgba(253, 165, 0, 0.4);
+  background: rgba(253, 165, 0, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(253, 165, 0, 0.15);
+}
+
+
+.role-option.selected {
+  border-color: #fda500;
+  background: rgba(253, 165, 0, 0.15);
+  box-shadow: 0 0 20px rgba(253, 165, 0, 0.3), inset 0 0 12px rgba(253, 165, 0, 0.1);
+  transform: scale(1.05);
+}
+
+.role-option.selected::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 10px;
+  height: 10px;
+  background: #fda500;
+  border: 2px solid white;
+  border-radius: 50%;
+}
+
+.role-option.selected .role-icon {
+  filter: drop-shadow(0 0 6px rgba(253, 165, 0, 0.6));
+}
+
+.role-label {
+  font-size: 0.8rem;
+  color: white;
+  letter-spacing: 0.3px;
+  transition: all 0.3s ease;
+}
+
+.role-option:hover .role-label {
+  color: #fda500;
+}
+
+.role-option.selected .role-label {
+  color: #fda500;
+  font-weight: 700;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px){
+  .role-option {
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+  }
+  .role-option.selected {
+    transform: scale(1.01);
+  }
+  .role-option .role-icon {
+  }
+
+  .role-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.2px;
+  }
+}
+
+@media (max-width: 375px){
+  .role-options{
+    justify-content: space-around; 
+  }
+  .role-option .role-icon {
+    font-size: larger;
+  }
+
+  .role-label {
+    display: none;
+  }
+}

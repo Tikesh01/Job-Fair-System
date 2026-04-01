@@ -8,13 +8,10 @@ export default function Navbar() {
   const token = getCookie('token')
   const role = getCookie('role')
   const {notify} = useNotification()
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const active = localStorage.getItem('currentLoc')
   const navigate = useNavigate()
-
-  let windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-  document.addEventListener('resize', () =>{
-    windowWidth =  window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-  })  
+ 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -24,7 +21,6 @@ export default function Navbar() {
       const response = await api.post('/logout')
       if(response.status === 200){
         notify('info',"Log Out Suceess")
-        delete document.cookie
         navigate('/')
       }
       else{
@@ -42,13 +38,11 @@ export default function Navbar() {
         </div>
 
         <div className={`navbar-menu ${isMenuOpen ? 'active' : ''}`}>
-          <a href="/" className="navbar-link">Home</a>
-          <a href="/about" className="navbar-link">About</a>
-          <a href="Contact" className="navbar-link">Contact</a>
-          <div className='navbar-menu'>
-            <a href="/job" className="navbar-link">Jobs</a>
-            <a href="/Company" className="navbar-link">Companies</a>
-          </div>
+          <a href="/" title='/' className={(active==='/')?"navbar-link active": 'navbar-link'} >Home</a>
+          <a href="/about"  title="/about" className={(active==='/about')?"navbar-link active": 'navbar-link'} >About</a>
+          <a href="/contact" title="/contact" className={(active==='/contact')?"navbar-link active": 'navbar-link'} >Contact</a>
+          <a href="/job" title="/job" className={(active==='/job')?"navbar-link active": 'navbar-link'} >Jobs</a>
+          <a href="/company" title="/company" className={(active==='/company')?"navbar-link active": 'navbar-link'}>Companies</a>
           <div className="navbar-actions">
             {token && role ?<a href="/Dashboard"><i className="fas fa-dashboard"></i> Dashboard</a>:<a href="/login" className="btn-secondary-nav"><i className="fas fa-arrow-right-to-bracket"></i> Login</a>}
             {token && role ? <button type="button" className="btn-primary-nav" onClick={handleLogout} >Log out</button>:<a href='/signup' className="btn-primary-nav">Sign Up</a>}

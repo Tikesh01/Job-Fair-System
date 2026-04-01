@@ -29,7 +29,6 @@ body{
 
 }
 main{
-  /* background: #493b3b; */
   width: 100%;
   min-height: calc(100vh - 70px);
   max-width: 1200px;
@@ -38,4 +37,31 @@ main{
   flex-direction: column;
   justify-content: center;
   gap: 3rem;
+}
+
+@media (max-width: 1024px){
+  main{
+    max-width: 900px;
+  }
+}
+
+@media (max-width: 768px){
+  main{
+    max-width: 600px;
+  }
+}
+@media (max-width: 480px){
+  main{
+    max-width: 400px;
+  }
+}
+@media (max-width: 375px){
+  main{
+    max-width: 350px;
+  }
+}
+@media (max-width: 320px){
+  main{
+    max-width: 304px;
+  }
 }

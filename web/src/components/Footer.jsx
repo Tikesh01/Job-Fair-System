@@ -129,10 +129,11 @@ export default function Footer() {
                   required
                 ></textarea>
               </div>
+                
+                <button type="submit" className="btn btn-s btn-primary">
+                  Send Feedback
+                </button>
 
-              <button type="submit" className="btn btn-primary">
-                Send Feedback
-              </button>
             </form>
           </div>
         </div>

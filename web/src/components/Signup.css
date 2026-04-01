@@ -6,6 +6,7 @@
   overflow: auto;
   width: auto;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  width: 100%;
 }
 .signup-container-header {
   text-align: center;
@@ -125,122 +126,6 @@
   font-size: 0.9rem;
 
 }
-
-/* Form Groups */
-.form-group {
-  margin-bottom: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  letter-spacing: 1px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.6rem;
-  font-size: 0.95rem;
-  font-weight: lighter;
-  color: rgb(173, 173, 173);
-}
-
-.form-input,
-.select-input {
-  width: 100% ;
-  padding: 1rem 1.5rem;
-  border: 1px solid #ffffff5b;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-family: inherit;
-  transition: all 0.3s ease;
-  background: transparent;
-  letter-spacing: 1px;
-
-}
-
-.role-options {
-  display: flex;
-  justify-content: space-between;
-  align-items: stretch;
-  gap: 0.75rem;
-  width: 100%;
-}
-
-.role-option {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  padding: 0.75rem 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: #e2e8f0;
-  background: rgba(17, 17, 17, 0.35);
-  min-width: 0;
-}
-
-.role-option:hover {
-  transform: translateY(-1px);
-  border-color: #667eea;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
-}
-
-.role-option input {
-  display: none;
-}
-
-.role-option .role-icon {
-  font-size: 1.4rem;
-  line-height: 1;
-}
-
-.role-option .role-label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-transform: capitalize;
-}
-
-.role-option.selected {
-  border-color: #fda500;
-  color: #fda500;
-  background: rgba(253, 165, 0, 0.12);
-  box-shadow: 0 0 0 2px rgba(253, 165, 0, 0.22);
-}
-
-.role-options.error .role-option {
-  border-color: #f56565;
-}
-
-.form-input::placeholder {
-  color: #ffffff;
-}
-
-.form-input:focus,
-.select-input:focus {
-  outline: none;
-  border-color: #667eea;
-  background: rgba(82, 81, 81, 0.301);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.form-input.error,
-.select-input.error {
-  border-color: #f56565;
-}
-
-.select-input {
-  cursor: pointer;
-}
-
-.select-input option {
-  padding: 0.5rem;
-  background: white;
-}
-
-/* OTP Input Styling */
 .otp-input {
   letter-spacing: 0.5rem;
   font-size: 1.2rem;
@@ -248,47 +133,11 @@
   text-align: center;
   font-family: 'Courier New', monospace;
 }
-
-/* Password Input Wrapper */
-.password-input-wrapper {
-  position: relative;
+.password-input-wrapper{
+  /* background: #9c7c7c75; */
   display: flex;
-  align-items: center;
   width: 100%;
-
 }
-
-.password-input-wrapper .form-input {
-  flex: 1;
-  padding-right: 2.5rem;
-  /* background: #6d5c5c; */
-}
-
-.toggle-password {
-  position: absolute;
-  right: 1rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.1rem;
-  color: #667eea;
-  transition: color 0.2s ease;
-  padding: 0.5rem;
-}
-
-.toggle-password:hover {
-  color: #764ba2;
-}
-
-/* Error Message */
-.error-message {
-  display: block;
-  color: #f56565;
-  font-size: 0.8rem;
-  margin-top: 0.4rem;
-  font-weight: 500;
-}
-
 /* Password Requirements */
 .password-requirements {
   margin-bottom: 1rem;
@@ -351,55 +200,6 @@
   text-decoration: underline;
 }
 
-/* Buttons */
-.btn {
-  width: 100%;
-  padding: 1rem;
-  border: none;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-family: inherit;
-}
-
-.btn-primary {
-  background: #fda500;
-  color: white;
-  box-shadow: 0 4px 15px #fda40070;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-}
-
-.btn-primary:active {
-  transform: translateY(0);
-}
-
-.btn-secondary {
-  color: #fda500;
-  border: 1px solid #fda500;
-}
-
-.btn-secondary:hover {
-  background: #fda500;
-  color: white;
-}
-
-/* Button Group */
-.button-group {
-  display: flex;
-  gap: 1rem;
-}
-
-.button-group .btn {
-  flex: 1;
-}
-
 /* Footer */
 .signup-footer {
   text-align: center;
@@ -422,13 +222,36 @@
   color: #764ba2;
   text-decoration: underline;
 }
-
-/* Responsive Design */
+@media (max-width: 1024px){
+    .signup-container{
+        /* background: #755050; */
+        gap: 3em;
+        margin: 0 auto;
+    }
+}
+@media (max-width: 768px){
+   .signup-rafiki-img{
+        display: none;
+    }
+    .signup-form {
+        /* background: #503939; */
+        width: 80%;
+    }
+}
+@media (max-width: 375px){
+    .signup-form {
+        width: 90%;
+    }
+}
+@media (max-width: 320px){
+    .signup-form {
+        width: 95%;
+    }
+}
 @media (max-width: 600px) {
   .signup-container {
     padding: 1rem;
   }
-/* no changes needed in header */
   .progress-bar {
     gap: 0.5rem;
     padding: 1rem 1.5rem;
@@ -447,12 +270,7 @@
     display: contents;
   }
 
-  .signup-rafiki-img{
-    display: none;
-  }
-
   .signup-form {
-    /* padding: 1.5rem; */
     width: 100%;
   }
 
