@@ -1,0 +1,45 @@
+.profile-container{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 1.5rem;
+    padding-top: 5em;
+    
+}
+.profile-header{
+    height: 170px;
+    display: flex;
+    position: relative;
+    padding: 1rem;
+    padding-left: 0;
+    border-top: var(--border-style);
+
+}
+.profile-img{
+    height: 210px;
+    width: auto;
+    position:absolute;
+    bottom: 0;
+    border: var(--border-style);
+    border-radius: 50px;
+    background: transparent;
+   
+}
+.profile-header-content{
+    margin-left: 240px;
+}
+.profile-grid{
+    background: #d1c9c9;
+    height: 40em;
+    display: flex;
+    
+    gap:1.5em;
+    
+}
+.partition{
+    background: #45804a;
+    width:100%;
+    display: flex;
+    flex-direction: column;
+    gap:1.5em;
+}

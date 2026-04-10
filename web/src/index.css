@@ -4,7 +4,7 @@
   font-weight: 400;
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  --border-style: 0.5px solid rgba(255, 255, 255, 0.185);
+  --border-style: 0.5px solid rgba(255, 255, 255, 0.185); 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -26,10 +26,16 @@ a:focus {
   border-radius: 2px;
 }
 
-
-h1 {
+h1{
   font-size: 3.2em;
   line-height: 1.1;
+}
+h1,h2{
+  background: linear-gradient(135deg, #ffc107, #ff9500);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+
 }
 .form-group{
     display: flex;
@@ -92,14 +98,14 @@ button {
   transition: border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
 }
 .btn-primary{
-  background: #fda500;
+  background: linear-gradient(135deg, #ffc107, #ff9500);
+  color: #1a1a1a;
 }
 .btn-secondary{
 
 }
 button:hover {
   border-color: #646cff;
-  background: #dd6d05f5;
   box-shadow: 0 4px 12px rgba(253, 165, 0, 0.3);
   transform: translateY(-2px);
 }

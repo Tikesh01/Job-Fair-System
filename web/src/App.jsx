@@ -12,11 +12,12 @@ import Company from './components/NavMenu/Company';
 import About from './components/NavMenu/About';
 import Job from './components/NavMenu/Job';
 import Contact from './components/NavMenu/Contact';
+import JobfairDates from './components/NavMenu/JobfairDates';
 import Dashboard from './components/dashboard'
 import Error404 from './components/error404'
 import Profile from './components/DashboardLayout/Profile';
 import { useState, useEffect } from 'react';
-import { useNotification } from "./contexts/NotificationContext";
+
 
 function App() {
     const [token, setToken] = useState(getCookie('token'))
@@ -48,6 +49,7 @@ function App() {
                         <Route path='/job' element={<Job />} />
                         <Route path='/about' element={<About />} />
                         <Route path='/contact' element={<Contact />} />
+                        <Route path='/imp-dates' element={<JobfairDates />} />
                         {token && role? 
                             <Route path='/dashboard' element={<Dashboard />} >
                                 <Route index element={<Profile />} />

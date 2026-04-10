@@ -128,7 +128,7 @@
 }
 .otp-input {
   letter-spacing: 0.5rem;
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: 600;
   text-align: center;
   font-family: 'Courier New', monospace;
@@ -193,6 +193,7 @@
   text-decoration: none;
   font-weight: 600;
   transition: color 0.2s ease;
+  cursor: pointer;
 }
 
 .resend-link:hover {

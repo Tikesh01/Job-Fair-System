@@ -137,12 +137,30 @@ export default function Signup() {
   const handleBack = () => {
     setStep(step - 1);
   };
-
+  const handleResendOtp = async () =>{
+    const newErrors={}
+    try {
+      const payload = { role: formData.role, email: formData.email };
+      const resp = await api.post("/generate/otp", payload);
+      if (resp.status === 200) {
+        notify('OTP Resent Successfully')
+      }
+      else {
+        const errDetail = resp.data?.detail;
+        newErrors.otp = typeof errDetail === 'string' ? errDetail : 'Failed to send OTP. Please try again.';
+      }
+    } catch (error) {
+      const errDetail = error.response?.data?.detail;
+      newErrors.otp = typeof errDetail === 'string' ? errDetail : 'Failed to send OTP. Please try again.';
+    }
+    setErrors(newErrors)
+  }
+  
   return (<>
       <div className="signup-container">
       <div className="signup-container-header">
           <h1>Create Your Account</h1>
-          <p>Join the Job Fair Community</p>
+          <p>Get Job || Give Job</p>
        
 
         <div className="progress-bar">
@@ -225,7 +243,7 @@ export default function Signup() {
               </div>
 
               <p className="resend-text">
-                Didn't receive the code? <a href="#resend" className="resend-link">Resend OTP</a>
+                Didn't receive the code? <span onClick={handleResendOtp} className="resend-link">Resend OTP</span>
               </p>
 
               <div className="btn-group">

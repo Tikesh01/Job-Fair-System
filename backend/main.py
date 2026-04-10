@@ -63,9 +63,12 @@ def validate_role(role:str):
         
 def check_otp_limit(email:str) -> bool:
     result = db.query("SELECT id FROM otp WHERE email = %s", params=(email, ))
+    print(len(result))
     return bool(len(result) < 5)
 
 def verify_email_otp(email:str, otp:str):
+    if len(otp) != 6 or re.search(r"[1-9]", otp):
+        return False
     result = db.query("SELECT id,created_at FROM otp WHERE email = %s AND otp = %s ORDER BY id DESC", (email, otp, ))
     if not result:
         return False
@@ -113,7 +116,6 @@ def require_roles(*allowed_roles):
         return wrapper
     return decorator
 
-
 @app.post("/login")
 def login(request:loginRequest):
     role = request.role
@@ -146,6 +148,7 @@ def logout(request:Request):
     response = JSONResponse({"message": "Logged out successfully"})
     response.delete_cookie("token")
     response.delete_cookie("role")
+    response.delete_cookie("expiry_time")
     return response
 
 @app.post("/generate/otp")
@@ -155,21 +158,22 @@ def generate_otp(request: otpRequest):
     if isDuplicateUser(email) == True:
         raise HTTPException(status_code=409, detail="User Alredy Exists")
     if validate_email(email) and validate_role(role):
+
         if check_otp_limit(email):
             otp = ''.join(random.choices(string.digits, k=6))
             db.query("INSERT INTO otp (email, otp) VALUES (%s, %s)", (email, otp,), commit=True)
             # send email 
             print(f"OTP for {request.email}: {otp}")  # For testing
-            return {"message": "OTP sent successfully"}
+            return {"massage":"OTP sent successfully"}
         else:
-            HTTPException(status_code=409, detail="Limit Accided")
+           raise HTTPException(status_code=409, detail="Repeatative Request, Try again Later")
     else:
         raise HTTPException(status_code=400, detail="Wrong Email or Role!")
 
 @app.post("/verify/otp")
 def verify_otp(request: otpVerify):
     email = request.email
-    otp = request.otp
+    otp = request.otp.strip()
     if verify_email_otp(email, otp):
         return {"message": "OTP verified successfully"}
     else:
@@ -231,9 +235,15 @@ def register_user(request: UserRegister):
 
 @app.get('/companies', response_model=list)
 def get_company_list():
-    companies = db.getTable('company')
-    print(companies)
-    return companies
+    try:
+        companies = db.getTable('company')
+        print(companies)
+        return companies
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Some Errro occured")
+  
+
 
 if __name__ == "__main__":
     uvicorn.run(app="main:app",host=host,port=port, reload=True)

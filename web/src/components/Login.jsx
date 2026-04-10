@@ -5,7 +5,7 @@ import { useState } from 'react'
 import api from '../api/axiosapi'
 import { useNotification } from '../contexts/NotificationContext'
 import { useNavigate } from 'react-router-dom'
-import {FaBuilding, FaGraduationCap, FaUniversity, } from 'react-icons/fa';
+import {FaBuilding, FaGraduationCap, FaLifeRing, FaUniversity, } from 'react-icons/fa';
 
 function Login(){
     const navigate = useNavigate()
@@ -72,6 +72,9 @@ function Login(){
             <div className="login-rafiki-image">
                 <img src={loginImg} alt="Login Img loading....." />
             </div>
+            {/* <div className="partition">
+                <hr className='vertical-hr' /><FaLifeRing /><hr className='vertical-hr' />
+            </div> */}
             <div className="login-form-wrapper">
                 <div className="login-wrapper-header">
                     <h2>Welcome Back</h2>
