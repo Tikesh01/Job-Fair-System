@@ -5,4 +5,16 @@ const api = axios.create({
   withCredentials: true
 });
 
+export function extApi(baseURL, headers){
+  try{
+    const api = axios.create({
+      baseURL: baseURL,
+      headers: headers,
+      withCredentials: true
+    })
+    return api;
+  }catch(error){
+    return "NO Api Found"
+  }
+};
 export default api;

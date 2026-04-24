@@ -26,7 +26,7 @@ frontend_origin = os.getenv('FRONTEND_ORIGIN')
 allow_credentials = os.getenv("ALLOW_CREDENTIAL")
 
 app = FastAPI(title="Job-Fair-System",debug=debug)
-app.add_middleware(CORSMiddleware,allow_origins=[frontend_origin],allow_methods=["*"], allow_credentials=allow_credentials)
+app.add_middleware(CORSMiddleware,allow_origins=[frontend_origin],allow_methods=["*"], allow_credentials=allow_credentials, allow_headers=["*"])
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
@@ -62,14 +62,16 @@ def validate_role(role:str):
         return False
         
 def check_otp_limit(email:str) -> bool:
-    result = db.query("SELECT id FROM otp WHERE email = %s", params=(email, ))
+    result = db.query("SELECT id FROM otps WHERE email = %s", params=(email, ))
     print(len(result))
     return bool(len(result) < 5)
 
 def verify_email_otp(email:str, otp:str):
-    if len(otp) != 6 or re.search(r"[1-9]", otp):
+    if len(otp) != 6:
         return False
-    result = db.query("SELECT id,created_at FROM otp WHERE email = %s AND otp = %s ORDER BY id DESC", (email, otp, ))
+    
+    print("otp verification method")
+    result = db.query("SELECT id,created_at FROM otps WHERE email = %s AND otp = %s ORDER BY id DESC", (email, otp, ))
     if not result:
         return False
     user = result[0]
@@ -78,10 +80,15 @@ def verify_email_otp(email:str, otp:str):
         return False
     return True
 
-def check_user_exist(role, email, pw):
-    q = f"SELECT {role}_id as user_id, email FROM {role} WHERE email=%s AND password=%s"
-    result = db.query(q, params=(email,pw,))
-    return result[0] if result else None
+def check_user_exist(role:str, email:str, pw=None):
+    result = []
+    if not pw:
+        q = f"SELECT {role}_id as user_id, email FROM {role} WHERE email=%s;"
+        result = db.query(q, params=(email,))
+    else:
+        q = f"SELECT {role}_id as user_id, email FROM {role} WHERE email=%s AND password=%s"
+        result = db.query(q, params=(email,pw,))
+    return result[0] if len(result)>0 else None
 
 def create_access_token(payload: dict, expiry_minutes: timedelta ):
     to_encode = payload.copy()
@@ -90,23 +97,31 @@ def create_access_token(payload: dict, expiry_minutes: timedelta ):
     encoded_jwt = jwt.encode(to_encode, secret_key, algorithm=algorithm)
     return encoded_jwt
 
+def token_decode(request):
+    token = request.cookies.get("token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Invalid or missing token")
+
+    try:
+        payload = jwt.decode(token, secret_key, algorithms=[algorithm])
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
 def require_roles(*allowed_roles):
     def decorator(func):
         @wraps(func)
         async def wrapper(request: Request, *args, **kwargs):
             try:
-                token = request.cookies.get("token")
-                if not token:
-                    raise HTTPException(status_code=401, detail="Invalid or missing token")
-
-                try:
-                    payload = jwt.decode(token, secret_key, algorithms=[algorithm])
-                except jwt.ExpiredSignatureError:
-                    raise HTTPException(status_code=401, detail="Token expired")
-                except jwt.InvalidTokenError:
-                    raise HTTPException(status_code=401, detail="Invalid token")
-
+                payload = token_decode(request)
                 user_role = payload.get("role")
+                # email = payload.get('email')
+                # user = check_user_exist(user_role,email)
+                # if not user:
+                #     raise HTTPException(status_code=403, detail="You are not Authorized")
+                
                 if user_role not in allowed_roles:
                     raise HTTPException(status_code=403, detail="You are not Authorized")
                 request.state.user = payload
@@ -161,7 +176,7 @@ def generate_otp(request: otpRequest):
 
         if check_otp_limit(email):
             otp = ''.join(random.choices(string.digits, k=6))
-            db.query("INSERT INTO otp (email, otp) VALUES (%s, %s)", (email, otp,), commit=True)
+            db.query("INSERT INTO otps (email, otp) VALUES (%s, %s)", (email, otp,), commit=True)
             # send email 
             print(f"OTP for {request.email}: {otp}")  # For testing
             return {"massage":"OTP sent successfully"}
@@ -174,6 +189,7 @@ def generate_otp(request: otpRequest):
 def verify_otp(request: otpVerify):
     email = request.email
     otp = request.otp.strip()
+    print(otp)
     if verify_email_otp(email, otp):
         return {"message": "OTP verified successfully"}
     else:
@@ -242,7 +258,74 @@ def get_company_list():
 
     except Exception as e:
         raise HTTPException(status_code=400, detail="Some Errro occured")
-  
+    
+@app.get("/user/detail")
+@require_roles("candidate","university","company")
+def get_user_details(request:Request):
+    try:
+        payload = token_decode(request)
+        role = payload.get('role')
+        if not validate_role(role):
+            raise HTTPException(status_code=400, detail="Invalid Role")
+        
+        user_id = payload.get('sub')
+
+        user = db.query(f'SELECT * FROM {role} WHERE {role}_id = %s',params=(user_id,))
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        return user[0]
+       
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error")
+    
+@app.get("/courses")
+@require_roles("candidate")
+def get_all_courses_list(request:Request):
+    try:
+        result = db.getTable('course')
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=400,detail="Error occured")
+
+@app.get("/course/{course_id}")
+@require_roles("candidate")
+def get_candidate_course_detail(request:Request, course_id:int):
+    try:
+        candidate_course = db.query("SELECT * FROM course WHERE course_id=%s",params=(course_id,))
+        if len(candidate_course) == 0:
+            raise HTTPException(status_code=200,detail="No course Found")
+        courseObj = dict(candidate_course[0])
+        branch_id_obj_list = db.query("SELECT branch_id FROM course_branch WHERE course_id=%s",params=(courseObj['course_id'],))
+
+        branch_id_list = []
+        for obj in branch_id_obj_list:
+            branch_id_list.append(str(obj['branch_id']))
+
+        id_str = ", ".join(branch_id_list);
+        
+        branches_obj_list =db.query(f"SELECT * FROM branch WHERE branch_id IN ({id_str})")
+
+        courseObj['branches'] = branches_obj_list
+
+        print(courseObj)
+        return courseObj
+    
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Error Occured")
+
+@app.get("/branch/{branch_id}")
+@require_roles("candidate")
+def get_candidate_branch_detail(request:Request, branch_id:int):
+    try:
+        result = db.query('SELECT * FROM branch WHERE branch_id=%s',params=(branch_id))
+        if len(result) ==0:
+            raise HTTPException(status_code=200,detail="No Branch found")
+        return result[0]
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Error Occured")
 
 
 if __name__ == "__main__":

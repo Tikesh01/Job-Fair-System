@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import './Navbar.css';
+import logo from '../assets/ITM_Raipur_Logo_1_32daed6522.png'
 import { getCookie } from '../utils/cookies';
 import api from '../api/axiosapi';
 import { useNotification } from '../contexts/NotificationContext';
@@ -48,11 +49,7 @@ export default function Navbar() {
     <nav className="navbar">
       <div className="navbar-container">
         <NavLink to="/" className="navbar-logo" onClick={closeMenu}>
-          <span className="logo-mark">JF</span>
-          <div className="logo-copy">
-            <span className="logo-title">JobFair</span>
-            <span className="logo-subtitle">Career opportunities</span>
-          </div>
+          <img src={logo} alt="" />
         </NavLink>
 
         <div className={`navbar-menu ${isMenuOpen ? 'active' : ''}`}>

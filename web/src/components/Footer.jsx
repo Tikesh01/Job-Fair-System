@@ -139,7 +139,6 @@ export default function Footer() {
         </div>
 
         <div className="footer-bottom">
-          <p>&copy; 2026 JobFair. All rights reserved.</p>
           <p>Made with ❤️ for job seekers and employers</p>
         </div>
       </div>

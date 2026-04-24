@@ -1,4 +1,6 @@
 .footer {
+  background: #231f20;
+  color: white;
   width: 100%;
   border-top: var(--border-style);
   padding: 2em 0;
@@ -27,9 +29,10 @@
     border: var(--border-style);
     padding: 1.5em;
     border-radius: 20px;
-    input{
+    input,textarea{
       padding: 0.7em 1.3em;
       font-size: smaller;
+      color: aliceblue;
     }
     button{
       padding: 0.6em 1.2em;

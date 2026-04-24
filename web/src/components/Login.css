@@ -1,5 +1,5 @@
 .login-container{
-    background: rgba(255, 255, 255, 0.034);
+    background: white;
     backdrop-filter: blur(15px);
     width: 100%;
     display: flex;
@@ -8,11 +8,12 @@
     border: var(--border-style);
     border-radius: 35px;
     padding: 1em 0;
-    
+    box-shadow: 0 4px 10px gray;
 }
 .login-rafiki-image{
-    width: 40%;
+    width: 35%;
 }
+
 .partition{
     display: flex;
     flex-direction: column;
@@ -39,14 +40,13 @@
 }
 .login-wrapper-header p{
     font-size: smaller;
-    color: gray;
+    color: rgb(90, 89, 89);
 }
 .login-form{
     width: 100%;
 }
 .login-footer{
     margin-top: 1.5em;
-    color: rgba(255, 255, 255, 0.527);
 }
 @media (max-width: 1024px){
     .login-container{

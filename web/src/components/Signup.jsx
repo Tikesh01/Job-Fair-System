@@ -2,10 +2,10 @@ import { useState } from 'react';
 import './Signup.css';
 import './RoleOption.css';
 import api from '../api/axiosapi'
-import signupImage from '../assets/signup-bro.svg';
+import signupImage from '../assets/mobile-login-animate.svg';
 import { useNavigate } from 'react-router-dom'
 import { useNotification } from '../contexts/NotificationContext';
-import { FaBuilding, FaGraduationCap, FaUniversity } from 'react-icons/fa';
+import { FaBuilding, FaGraduationCap, FaUniversity, FaUsers } from 'react-icons/fa';
 
 export default function Signup() {
   const {notify} = useNotification('')
@@ -182,7 +182,7 @@ export default function Signup() {
               <h2>Let's get started</h2>
 
               <div className="form-group" >
-                <label>Select Your Role</label>
+                <label><i className='fas fa-users'></i> Select Your Role</label>
                 <div className={`role-options ${errors.role ? 'error' : ''}`}>
                   {roleOptions.map((role) => (
                     <label key={role.value} className={`role-option ${formData.role === role.value ? 'selected' : ''}`}>

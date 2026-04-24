@@ -1,6 +1,6 @@
 import './Login.css'
 import './RoleOption.css'
-import loginImg  from '../assets/login-bro.svg'
+import loginImg  from '../assets/tablet-login-animate.svg'
 import { useState } from 'react'
 import api from '../api/axiosapi'
 import { useNotification } from '../contexts/NotificationContext'

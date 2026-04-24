@@ -2,7 +2,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  /* flex-wrap: wrap; */
   width: 100%;
 }
 
@@ -17,7 +16,8 @@
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--main-color);
+  color: black;
   border-radius: 8px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -31,9 +31,7 @@
 
 
 .role-option.selected {
-  border-color: #fda500;
-  background: rgba(253, 165, 0, 0.15);
-  box-shadow: 0 0 20px rgba(253, 165, 0, 0.3), inset 0 0 12px rgba(253, 165, 0, 0.1);
+   color: var(--main-color);
   transform: scale(1.05);
 }
 
@@ -44,28 +42,15 @@
   right: -6px;
   width: 10px;
   height: 10px;
-  background: #fda500;
+  background: var(--main-color);
   border: 2px solid white;
   border-radius: 50%;
 }
-
-.role-option.selected .role-icon {
-  filter: drop-shadow(0 0 6px rgba(253, 165, 0, 0.6));
-}
-
 .role-label {
   font-size: 0.8rem;
-  color: white;
-  letter-spacing: 0.3px;
   transition: all 0.3s ease;
 }
-
-.role-option:hover .role-label {
-  color: #fda500;
-}
-
 .role-option.selected .role-label {
-  color: #fda500;
   font-weight: 700;
 }
 
