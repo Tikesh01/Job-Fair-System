@@ -17,6 +17,9 @@ import Dashboard from './components/dashboard'
 import Error404 from './components/error404'
 import Profile from './components/DashboardLayout/Profile';
 import { useState, useEffect } from 'react';
+import JobApplication from './components/DashboardLayout/Candidate/JobApplication';
+import Workshop from './components/DashboardLayout/Candidate/Workshop';
+
 
 
 function App() {
@@ -55,6 +58,8 @@ function App() {
                                 <Route index element={<Profile />} />
                                 <Route path='/dashboard/company' element={<Company />} />
                                 <Route path='/dashboard/job' element={<Job />} />
+                                <Route path='/dashboard/job/applications' element={<JobApplication />} />
+                                <Route path='/dashboard/workshop' element={<Workshop />} />
                             </Route>
                         :
                             <Route path="*" element={<Error404 />} />

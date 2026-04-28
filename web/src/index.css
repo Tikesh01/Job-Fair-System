@@ -27,7 +27,7 @@ body{
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  background: whitesmoke;
+  background: #F2F2F2;
 }
 a {
   font-weight: 500;
@@ -62,8 +62,16 @@ h1,h2{
     gap: 0.7em;
     margin-top: 1.6em;
 }
+.small-group{
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+}
 label{
     color: black;
+    display: flex;
+    align-items: center;
+    gap:  0.5rem;
 }
 textarea,input, select{
     width: 100%;
@@ -75,8 +83,12 @@ textarea,input, select{
     border: var(--border-style);
     transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
 }
+input[type=checkbox], input[type=radio]{
+  width: auto;
+  scale: 1.2;
+}
 input[type=radio]{
-    display: none;
+  
 }
 textarea:focus, input:focus, select:focus,
 textarea:focus-visible, input:focus-visible, select:focus-visible{
@@ -115,6 +127,14 @@ button {
   font-weight: bold;
   cursor: pointer;
   transition: border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+}
+button:disabled{
+   border: none;
+   background: rgba(54, 54, 54, 0.11);
+   color: gray;
+}
+button:disabled:hover{
+  box-shadow: none;
 }
 .btn-primary{
   background: rgb(169 29 84 / 1);

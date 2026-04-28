@@ -3,16 +3,16 @@ import {getCookie} from '../utils/cookies';
 import { FaBriefcase, FaList, FaBuilding, FaGraduationCap, FaUser, FaEdit, FaUsers, FaFolder, FaRegFolder, FaFile, FaFileAlt } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 const candidateDashMenu = [
-    {title:'Job Applications',to:'/dashboard/std-application', text:'Applcation', icon:<FaBriefcase />},
+    {title:'Job Applications',to:'/dashboard/job/applications', text:'Applcation', icon:<FaBriefcase />},
     {title:'Job Roles',to:'/dashboard/job', text:'Vacancy', icon:<FaList />},
     {title:'Companies',to:'/dashboard/company', text:'Company', icon:<FaBuilding />},
     {title:'Workshops',to:'/dashboard/workshop', text:'Workshop', icon:<FaGraduationCap />},
-    {title:'Job Applications',to:'/dashboard', text:'Pofile', icon:<FaUser />}
+    {title:'Candidate profile',to:'/dashboard', text:'Pofile', icon:<FaUser />}
 ];
 const companyDashMenu = [
-    {title:'Applications from Candidates',to:'/dashboard', text:'Applications', icon:<FaFileAlt />},
-    {title:'Your Created Job Roles',to:'/dashboard', text:'Vacancy', icon:<FaEdit />},
-    {title:'Your HR',to:'/dashboard', text:'HR', icon:<FaUsers />},
+    {title:'Applications from Candidates',to:'/dashboard/job/applications', text:'Applications', icon:<FaFileAlt />},
+    {title:'Your Created Job Roles',to:'/dashboard/job', text:'Vacancy', icon:<FaEdit />},
+    {title:'Your HR',to:'/dashboard/hr', text:'HR', icon:<FaUsers />},
     {title:'Profile',to:'/dashboard', text:'Profile', icon:<FaUser />}
 ];
 
@@ -52,7 +52,10 @@ export default function MobileNavMenu(){
                 <div className="smaller-nav-menu">
                     {
                         companyDashMenu.map(link=>(
-                            <Link key={link.to} title={link.title} className={link.to === currentPath ?'dashboardlink active':'dashboardlink'} to={link.to}>{link.icon} {link.text}</Link>
+                            <Link key={link.to} title={link.title} className={link.to === currentPath ?'dashboardlink active':'dashboardlink'} to={link.to}>
+                                <span className='link-icon'>{link.icon}</span>
+                                <span className="link-text"> {link.text}</span>
+                            </Link>
                         ))
                     }
                 </div>
@@ -60,7 +63,10 @@ export default function MobileNavMenu(){
                 <div className="smaller-nav-menu">
                     {
                         UniversityDashMenu.map(link=>(
-                            <Link key={link.to} title={link.title} className={link.to === currentPath ?'dashboardlink active':'dashboardlink'} to={link.to}>{link.icon} {link.text}</Link>
+                            <Link key={link.to} title={link.title} className={link.to === currentPath ?'dashboardlink active':'dashboardlink'} to={link.to}>
+                                <span className='link-icon'>{link.icon}</span>
+                                <span className="link-text"> {link.text}</span>
+                            </Link>
                         ))
                     }
                 </div>
@@ -68,7 +74,10 @@ export default function MobileNavMenu(){
             <div className="smaller-nav-menu">
                 {
                     publicDashMenu.map(link=>(
-                        <Link key={link.to} title={link.title} className={link.to === currentPath ?'dashboardlink active':'dashboardlink'} to={link.to}>{link.icon} {link.text}</Link>
+                        <Link key={link.to} title={link.title} className={link.to === currentPath ?'dashboardlink active':'dashboardlink'} to={link.to}>
+                            <span className='link-icon'>{link.icon}</span>
+                            <span className="link-text"> {link.text}</span>
+                        </Link>
                     ))
                 }
             </div>

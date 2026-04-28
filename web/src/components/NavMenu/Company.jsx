@@ -9,8 +9,8 @@ export default  function Company() {
     const response = api.get('/companies')
     console.log(response?.data?.detail)
     return (
-        <div className="company-container">
-            
-        </div>
+        <>
+            <h1>See Companies here</h1>
+        </>
     );
 }

@@ -32,6 +32,7 @@
     width: 34%;
 
 }
+
 .login-wrapper-header{
     font-size: larger;
     padding-bottom: 1em;
@@ -44,6 +45,9 @@
 }
 .login-form{
     width: 100%;
+}
+.login-form input[type=radio]{
+  display: none;
 }
 .login-footer{
     margin-top: 1.5em;

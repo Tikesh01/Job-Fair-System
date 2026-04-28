@@ -2,7 +2,7 @@ main{
   width: 100%;
   min-height: calc(100vh - 70px);
   max-width: 1200px;
-  /* margin: 2em auto; */
+  margin: 2em auto;
   display: flex;
   flex-direction: column;
   justify-content: center;

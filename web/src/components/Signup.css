@@ -8,6 +8,9 @@
   box-shadow: 0 4px 10px gray;
   width: 100%;
 }
+.signup-container input[type=radio]{
+  display: none;
+}
 .signup-container-header {
   text-align: center;
   padding: 1em 0;

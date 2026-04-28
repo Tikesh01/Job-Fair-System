@@ -37,7 +37,7 @@
     /* background: #c7a0a0c0; */
     text-align: start;
     display: flex;
-    justify-content: space-between;
+    gap: 3em;
 
     
 }
@@ -45,6 +45,8 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    
+    width: 100%;
 }
 
 .profile-header-box .profile-role{
@@ -59,9 +61,12 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.2rem 0.4rem;
+    padding: 0.4rem 0.4rem;
+    width: 60%;
+    margin: 0 auto ;
     border-radius: 50px;
     font-size: smaller;
+    color: white;
 }
 .user-status.verified{
     background: rgba(5, 168, 73, 0.849);
@@ -90,7 +95,7 @@
     flex-direction: column;
     align-items: flex-start;
     padding: 1.5rem;
-    background-color: rgb(248 248 248 / 1);
+   background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%);;
     /* background: #231f20; */
     transition: all 0.3s ease;
     backdrop-filter: blur(5px);
@@ -107,59 +112,47 @@
 }
 .partition-box .form-group{
     width: 100%;
+    /* margin-top: 1.2rem;
+    gap: 0.7rem; */
 }
 .profile-input{
     padding: 1em 1.2em;
-    border-left: 0.3rem solid var(--main-color);
 }
 .profile-input:disabled{
    border: none;
+   background: rgba(54, 54, 54, 0.11);
+}
+.profile-input[type=checkbox]:disabled{
+   border: 1px solid green;
    background: rgba(54, 54, 54, 0.11);
 }
 .profile-header-box .profile-name{
     font-size: x-large;
     padding: 0;
     background: none;
-    color: #fda500;
+    color: var(--main-color);
+    border: none;
+    border-bottom: var(--border-style);
+    border-radius: 0;
 }
 
 @media(max-width: 768px) {
-    .profile-header{
-        height: auto;
-        flex-direction: column;
-        position: static;
-        gap: 1rem;
-        margin-top: -100px;
-
-    }
-    .profile-img{
-        width: 210px;
-        margin: auto;
-        position:static;
-        
-    }
-    .profile-header-content{
-        margin-left: 0;
-        padding: 0rem 0rem;
-        width: 100%;
-        text-align: center;
-        flex-direction: column;
-        gap: 1rem;
-        
-    }
-    .profile-header-box{
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    .profile-header-box .profile-name{
-        text-align: center;
-    }
     .profile-grid{
        flex-direction: column;
  
-        
     }
-
-
+}
+@media (max-width:480px){
+    #Links{
+        .small-group{
+            gap:0.3rem;
+        }
+        input{
+            padding: 0.5rem;
+        }
+        button{
+            padding: 0.2rem;
+            width: auto;
+        }
+    }
 }

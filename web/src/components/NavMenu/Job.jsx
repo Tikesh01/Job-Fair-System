@@ -54,63 +54,8 @@ export default function Job() {
     });
 
     return (
-        <div className="job-container">
-            <div className="job-header">
-                <h1>Job Opportunities</h1>
-                <p>Find your perfect role from thousands of opportunities</p>
-            </div>
-
-            <div className="job-controls">
-                <div className="search-box">
-                    <FaSearch />
-                    <input
-                        type="text"
-                        placeholder="Search by job title or company..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-
-                <div className="filter-box">
-                    <FaFilter />
-                    <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-                        <option value="all">All Categories</option>
-                        <option value="frontend">Frontend</option>
-                        <option value="backend">Backend</option>
-                        <option value="design">Design</option>
-                        <option value="data">Data Science</option>
-                    </select>
-                </div>
-            </div>
-
-            <div className="jobs-grid">
-                {filteredJobs.length > 0 ? (
-                    filteredJobs.map(job => (
-                        <div key={job.id} className="job-card">
-                            <div className="job-card-header">
-                                <h3>{job.title}</h3>
-                                <span className="job-type">{job.type}</span>
-                            </div>
-                            <p className="company-name">{job.company}</p>
-                            <div className="job-details">
-                                <div className="detail">
-                                    <FaMapMarkerAlt />
-                                    <span>{job.location}</span>
-                                </div>
-                                <div className="detail">
-                                    <FaMoneyBillWave />
-                                    <span>{job.salary}</span>
-                                </div>
-                            </div>
-                            <button className="apply-btn">Apply Now</button>
-                        </div>
-                    ))
-                ) : (
-                    <div className="no-jobs">
-                        <p>No jobs found matching your criteria.</p>
-                    </div>
-                )}
-            </div>
-        </div>
+        <>
+            <h1>See vacancies here</h1>
+        </>
     );
 }

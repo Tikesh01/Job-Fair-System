@@ -97,8 +97,7 @@ def create_access_token(payload: dict, expiry_minutes: timedelta ):
     encoded_jwt = jwt.encode(to_encode, secret_key, algorithm=algorithm)
     return encoded_jwt
 
-def token_decode(request):
-    token = request.cookies.get("token")
+def token_decode(token):
     if not token:
         raise HTTPException(status_code=401, detail="Invalid or missing token")
 
@@ -115,7 +114,8 @@ def require_roles(*allowed_roles):
         @wraps(func)
         async def wrapper(request: Request, *args, **kwargs):
             try:
-                payload = token_decode(request)
+                token = request.cookies.get("token")
+                payload = token_decode(token)
                 user_role = payload.get("role")
                 # email = payload.get('email')
                 # user = check_user_exist(user_role,email)
@@ -132,10 +132,10 @@ def require_roles(*allowed_roles):
     return decorator
 
 @app.post("/login")
-def login(request:loginRequest):
-    role = request.role
-    email = request.email 
-    pw = request.password
+def login(loginObj:loginRequest):
+    role = loginObj.role
+    email = loginObj.email 
+    pw = loginObj.password
     
     if not validate_role(role) or not validate_email(email):
         raise HTTPException(status_code=400,detail="Invalid Role or Email!")
@@ -263,7 +263,7 @@ def get_company_list():
 @require_roles("candidate","university","company")
 def get_user_details(request:Request):
     try:
-        payload = token_decode(request)
+        payload = request.state.user
         role = payload.get('role')
         if not validate_role(role):
             raise HTTPException(status_code=400, detail="Invalid Role")
@@ -290,6 +290,29 @@ def get_all_courses_list(request:Request):
     except Exception as e:
         raise HTTPException(status_code=400,detail="Error occured")
 
+def course_branches_by_course_id(course_id):
+    q = """
+        SELECT b.branch_id,b.branch_title 
+        FROM branch b join course_branch cb 
+            ON b.branch_id = cb.branch_id 
+            WHERE course_id = %s
+        
+        """
+    result = db.query(q, params=(course_id, ))
+
+    return result
+
+def course_by_branch_id_and_course_id(branch_id,course_id):
+    q = """
+        SELECT c.course_id,c.course_title 
+        FROM course c JOIN course_branch cb 
+        ON c.course_id = cb.course_id
+        WHERE cb.branch_id=%s AND c.course_id=%s
+    """
+    result = db.query(q,params=(branch_id,course_id))
+
+    return result
+    
 @app.get("/course/{course_id}")
 @require_roles("candidate")
 def get_candidate_course_detail(request:Request, course_id:int):
@@ -298,19 +321,16 @@ def get_candidate_course_detail(request:Request, course_id:int):
         if len(candidate_course) == 0:
             raise HTTPException(status_code=200,detail="No course Found")
         courseObj = dict(candidate_course[0])
-        branch_id_obj_list = db.query("SELECT branch_id FROM course_branch WHERE course_id=%s",params=(courseObj['course_id'],))
 
-        branch_id_list = []
-        for obj in branch_id_obj_list:
-            branch_id_list.append(str(obj['branch_id']))
-
-        id_str = ", ".join(branch_id_list);
-        
-        branches_obj_list =db.query(f"SELECT * FROM branch WHERE branch_id IN ({id_str})")
-
+        branches_obj_list = course_branches_by_course_id(course_id)
+        if (branches_obj_list) == 0:
+            branches_obj_list = [{
+                                    'branch_id':33,
+                                    'branch_title': 'other'
+                                }]
+            
         courseObj['branches'] = branches_obj_list
 
-        print(courseObj)
         return courseObj
     
     except Exception as e:
@@ -320,13 +340,117 @@ def get_candidate_course_detail(request:Request, course_id:int):
 @require_roles("candidate")
 def get_candidate_branch_detail(request:Request, branch_id:int):
     try:
-        result = db.query('SELECT * FROM branch WHERE branch_id=%s',params=(branch_id))
+        result = db.query('SELECT * FROM branch WHERE branch_id=%s',params=(branch_id, ))
+
         if len(result) ==0:
-            raise HTTPException(status_code=200,detail="No Branch found")
+            raise HTTPException(status_code=400,detail="No Branch found")
         return result[0]
     except Exception as e:
         raise HTTPException(status_code=400, detail="Error Occured")
 
+@app.post("/profile/update")
+@require_roles("candidate","university","company")
+def edit_profile(request:Request, data:dict): 
+    if not data:
+        raise HTTPException(status_code=400, detail="No Changes detected")
+    if 'email' in data:
+        raise HTTPException(status_code=400, detail="Email cannot be changed!")
+    
+    try:
+        payload = request.state.user
+        id = payload.get('sub')
+        role = payload.get('role')
+
+        if role == 'candidate':
+            if 'is_eligible' in data:
+                raise HTTPException(status_code=400, detail="Cannot be chnaged!")
+            if 'course_id' in data:
+                course_id = int(data['course_id'])
+                if course_id > 33 or course_id < 1:
+                    raise HTTPException(status_code=400, detail="Wrong Course Selection!")
+                branch_obj_list = course_branches_by_course_id(course_id)
+                if 'branch_id' in data:
+                    branch_id = int(data['branch_id'])
+                    if not any(branch['branch_id'] == branch_id for branch in branch_obj_list):  
+                        raise HTTPException(status_code=400, detail="Wrong Branch Selection")
+                elif 'branch_id' not in data:
+                    data['branch_id'] = branch_obj_list[0]['branch_id']
+
+        set_clause = ", ".join([f"{k} = %s" for k in data.keys()])
+        q = f"""
+                UPDATE {role}
+                SET
+                    {set_clause}
+                WHERE {role}_id = %s;
+            """
+        params = list(data.values()) + [id]
+        db.query(q, params=tuple(params), commit=True)
+        return {'msg' : "Profile updated Successfully"}
+    except HTTPException: 
+        raise
+    except Exception as e:  
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/candidate/links")
+@require_roles("candidate")
+def get_candidate_links(request:Request):
+    try:
+        payload = request.state.user;
+        candidate_id = payload.get('sub');
+        url_list = db.query('SELECT link_id, link_url FROM candidate_links WHERE candidate_id = %s', params=(candidate_id, ))
+
+        return url_list
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail='Cant Find links error')
+    
+@app.post("/candidate/link/update")
+@require_roles('candidate')
+def update_candidate_link(request:Request, urlObj:dict):
+    print(urlObj)
+    try:
+        user = request.state.user
+        user_id = user.get('sub')
+        link_id = urlObj['link_id']
+        link_url = urlObj['link_url']
+        db.query("UPDATE candidate_links cl SET cl.link_url=%s WHERE cl.link_id=%s AND cl.candidate_id=%s", params=(link_url, link_id, user_id,), commit=True)
+        return {'msg' : "Link Update Success"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Some Error Occured while updating Link")
+
+@app.delete("/candidate/link/{link_id}")
+@require_roles('candidate')
+def update_candidate_link(request:Request, link_id:int):
+    try:
+        user = request.state.user
+        user_id = user.get('sub')
+        db.query("DELETE FROM candidate_links cl WHERE cl.link_id=%s AND cl.candidate_id=%s", params=(link_id, user_id,), commit=True)
+        return {'msg' : "Link DELETE Success"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Some Error Occured while deleting Link")
+    
+def is_authenticated_url(url:str):
+    pass
+
+def is_safe_links_count(candidate_id):
+    result = db.query("SELECT link_id FROM candidate_links WHERE candidate_id = %s",params=(candidate_id, ))
+    print(result)
+    return bool(len(result) < 3)
+    
+@app.post("/candidate/link/create")
+@require_roles('candidate')
+def update_candidate_link(request:Request, urlObj:dict):
+    try:
+        user = request.state.user
+        user_id = user.get('sub')
+        if not is_safe_links_count(candidate_id=user_id):
+            raise HTTPException(status_code=409,detail="Max Url Count reached")
+
+        link_url = urlObj['link_url']
+        db.query("INSERT INTO candidate_links(link_url, candidate_id) VALUES(%s, %s)", params=(link_url, user_id,), commit=True)
+        return {'msg' : "Link Creation Success"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Some Error Occured while creating Link")
 
 if __name__ == "__main__":
     uvicorn.run(app="main:app",host=host,port=port, reload=True)
