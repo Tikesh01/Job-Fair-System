@@ -1,20 +1,5 @@
-.dashboard-content{
-    margin-right: -40px;
-    margin-left: 40px;
-    
-}
-@media(max-width:1100px){
-    .dashboard-content{
-        margin-right: -40px;
-        margin-left: 20px;
-        
-    }
-}
-@media(max-width:768px){
-
-    .dashboard-content{
-        margin-right: 0px;
-        margin-left: 0px;
-        
-    }
+.dashboard{
+    display: flex;
+    flex-direction: column;
+    gap:1.5rem;
 }

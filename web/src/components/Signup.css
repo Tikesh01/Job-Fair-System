@@ -8,9 +8,11 @@
   box-shadow: 0 4px 10px gray;
   width: 100%;
 }
-.signup-container input[type=radio]{
+
+.signup-container input[type=radio] {
   display: none;
 }
+
 .signup-container-header {
   text-align: center;
   padding: 1em 0;
@@ -77,6 +79,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -91,16 +94,24 @@
   justify-content: center;
   align-items: center;
   gap: 8%;
+  padding: 1rem 0;
 }
-.signup-rafiki-img{
+
+.signup-rafiki-img {
   width: 40%;
   /* background: #794e4e; */
- 
+
 }
 
 .signup-form {
-  /* background: #503131; */
-  width: 35%;
+  width: 36%;
+  padding: 1rem 2rem;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid rgba(70, 69, 69, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(255, 255, 255, 0.171);
+  transition: all 0.3s ease;
 }
 
 .form-step {
@@ -111,6 +122,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -127,6 +139,7 @@
   font-size: 0.9rem;
 
 }
+
 .otp-input {
   letter-spacing: 0.5rem;
   font-size: 1rem;
@@ -134,11 +147,25 @@
   text-align: center;
   font-family: 'Courier New', monospace;
 }
-.password-input-wrapper{
-  /* background: #9c7c7c75; */
+
+.password-input-wrapper {
+
   display: flex;
+  align-items: center;
   width: 100%;
+  position: relative;
+
+  input {
+    width: 100%;
+  }
+
+  .toggle-password {
+    position: absolute;
+    right: 1rem;
+    cursor: pointer;
+  }
 }
+
 /* Password Requirements */
 .password-requirements {
   margin-bottom: 1rem;
@@ -205,11 +232,10 @@
 /* Footer */
 .signup-footer {
   text-align: center;
-  padding: 0 2rem 2rem;
   margin: 0;
   font-size: 0.9rem;
   color: #718096;
-  margin-top: 2rem;
+  margin: 1.3rem;
 
 }
 
@@ -218,78 +244,73 @@
   text-decoration: none;
   font-weight: 600;
   transition: color 0.2s ease;
+  width: 100%;
+  padding: 0;
 }
 
 .login-link:hover {
   color: #764ba2;
   text-decoration: underline;
 }
-@media (max-width: 1024px){
-    .signup-container{
-        /* background: #755050; */
-        gap: 3em;
-        margin: 0 auto;
-    }
-}
-@media (max-width: 768px){
-   .signup-rafiki-img{
-        display: none;
-    }
-    .signup-form {
-        /* background: #503939; */
-        width: 80%;
-    }
-}
-@media (max-width: 375px){
-    .signup-form {
-        width: 90%;
-    }
-}
-@media (max-width: 320px){
-    .signup-form {
-        width: 95%;
-    }
-}
-@media (max-width: 600px) {
+
+@media (max-width: 1024px) {
   .signup-container {
-    padding: 1rem;
-  }
-  .progress-bar {
-    gap: 0.5rem;
-    padding: 1rem 1.5rem;
+    /* background: #755050; */
+    gap: 3em;
+    margin: 0 auto;
   }
 
-  .progress-step {
-    width: 35px;
-    height: 35px;
-    font-size: 0.8rem;
-  }
-
-  .progress-line {
-    width: 20px;
-  }
-  .signup-wrapper{
-    display: contents;
+  .signup-wrapper {
+    padding: 2rem 0;
   }
 
   .signup-form {
-    width: 100%;
+    padding: 0.5rem 1.5rem;
+    padding-bottom: 0;
+    width: 40%;
+  }
+}
+
+@media (max-width: 768px) {
+  .signup-rafiki-img {
+    display: none;
   }
 
-  .form-step h2 {
-    font-size: 1.2rem;
+  .signup-wrapper {
+    padding: 1rem 0;
   }
 
-  .btn {
-    padding: 0.85rem;
-    font-size: 0.9rem;
+  .signup-form {
+    border: none;
+    padding: 0;
+    width: 70%;
+  }
+}
+
+@media (max-width: 490px) {
+  .signup-form {
+    border: none;
+    padding: 0;
+    width: 80%;
+  }
+}
+
+@media (max-width: 375px) {
+  .signup-form {
+    width: 90%;
+  }
+}
+
+@media (max-width: 340px) {
+  .signup-container {}
+
+  .signup-container-header h1 {
+    font-size: 1.7rem;
+    font-weight: 600;
   }
 
-  .button-group {
-    flex-direction: column;
-  }
+  .signup-form {
 
-  .button-group .btn {
-    width: 100%;
+    width: 92%;
   }
 }

@@ -1,0 +1,97 @@
+.vacancy-container{
+    /* background: #aaa4a459; */
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.vacancy-list-wrapper,
+.demo-vacancy-wrapper,
+.vacancy-form-wrapper{
+    background: var(--bg-container);
+    border-radius: 22px;
+    padding: 1.5rem 2rem;
+}
+.vacancy-list-header,
+.demo-vacancy-header,
+.vacancy-form-header{
+    display: flex;
+    justify-content: space-between;
+    text-align: start;
+    cursor: pointer;
+    padding: 0;
+}
+.vacancy-list-header .vacancy-stat{
+    display: flex;
+    gap: 2rem;
+}
+.vacancy-stat span{
+    padding: 0.3rem 0.6rem;
+    border: 1px solid rgba(150, 202, 226, 0.747);
+    border-radius: 20px;
+    font-size: smaller;
+}
+.vacancy-card-grid,
+.vacancy-form-grid{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  column-gap: 1rem;
+  row-gap: 1rem;
+  margin-top: 1rem;
+}
+.demo{
+    margin-top: 1rem;
+}
+
+.vacancy-form input{
+    padding: 1em;
+}
+.vacancy-form select{
+    padding: 0.8em 1em;
+}
+.vacancy-form textarea{
+    padding: 1em;
+}
+.vacancy-form .form-group{
+    gap:0.4rem;
+    margin: 0.6rem;
+}
+.vacancy-form-grid{
+    column-gap: 3rem;
+}
+.form-actions{
+    float: inline-end;
+    width: 30%;
+}
+@media (max-width: 900px) {
+    .vacancy-card-grid,
+    .vacancy-form-grid{
+        grid-template-columns: repeat(1, 1fr);
+    }
+    .form-actions{
+        width: 100%;
+    }
+}
+@media (max-width: 500px) {
+    .vacancy-list-wrapper,
+    .demo-vacancy-wrapper,
+    .vacancy-form-wrapper{
+        padding: 1.2rem 1.5rem;
+    }
+    .vacancy-list-header{
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .vacancy-list-header .vacancy-stat{
+        gap: 0.7rem;
+    }
+}
+@media (max-width: 390px) {
+    .vacancy-list-wrapper,
+    .demo-vacancy-wrapper,
+    .vacancy-form-wrapper{
+        padding: 0.75rem ;
+        font-size: smaller;
+    }
+
+}

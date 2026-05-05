@@ -1,0 +1,71 @@
+.smaller-nav-menu{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    background: var(--bg-container);
+    border-radius: 22px;
+    padding: 0.5rem;
+    /* background: #776363; */
+    overflow: auto;
+
+}
+
+.smaller-nav-menu .dashboardlink{
+    /* background: #000; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 1.0s ease;
+    width: auto;
+    border-radius: 50%;
+    padding: 0.5rem 0.7rem;
+    color: #4a5672e0;
+}
+.dashboardlink:hover,
+.dashboardlink.active {
+    color: var(--highlight-color);
+    
+}
+.dashboardlink .db-nav-icon{
+    font-size: 1.5rem;
+}
+.dashboardlink .db-nav-text{
+    font-size: small;
+    display: none;
+}
+
+@media (max-width: 1024px){
+    .smaller-nav-menu{
+    }
+    .dashboardlink .db-nav-text{
+        font-size: 0.6rem;
+    }
+
+}
+/* Mobile Bottom Navigation */
+@media (max-width: 768px){
+    .smaller-nav-menu{
+    }
+    .smaller-nav-menu .dashboardlink{
+    
+    }
+    .dashboardlink .db-nav-icon{
+        font-size: 1.3rem;
+       
+    }
+}
+@media (max-width: 320px){
+    .smaller-nav-menu{
+    
+    }
+    .smaller-nav-menu .dashboardlink {
+        font-size: 0.55rem;
+    }
+
+    .dashboardlink .db-nav-icon{
+        font-size: 1.1rem;
+    }   
+
+}

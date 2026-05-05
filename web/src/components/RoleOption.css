@@ -49,6 +49,10 @@
 .role-label {
   font-size: 0.8rem;
   transition: all 0.3s ease;
+  display: none;
+}
+.role-label.selected{
+  display: block;
 }
 .role-option.selected .role-label {
   font-weight: 700;
@@ -83,14 +87,8 @@
 }
 
 @media (max-width: 375px){
-  .role-options{
-    justify-content: space-around; 
-  }
   .role-option .role-icon {
-    font-size: larger;
+    font-size: large;
   }
 
-  .role-label {
-    display: none;
-  }
 }

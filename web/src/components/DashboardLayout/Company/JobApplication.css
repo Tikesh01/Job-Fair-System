@@ -1,0 +1,198 @@
+.company-job-application-page {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background: var(--bg-container);
+    padding: 0;
+    border-radius: 22px;
+}
+
+
+.company-job-application-header {
+    padding: 1.25rem 1.5rem;
+}
+
+.company-job-application-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+    text-align: start;
+}
+
+.company-job-application-header h2,
+.company-job-applicants-header h3,
+.company-application-candidate-card h3,
+.company-job-empty h4 {
+    margin: 0;
+}
+
+.company-job-application-header p,
+.company-job-empty p{
+    margin-top: 0.4rem;
+    opacity: 0.8;
+}
+
+.company-job-application-stats {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.company-job-application-stats span,
+.company-job-applicants-header span {
+    padding: 0.55rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.08);
+    font-weight: 600;
+}
+
+.company-job-application-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    /* background: #9e7b7b; */
+}
+
+.company-job-application-group {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.company-job-vacancy-card {
+    width: 100%;
+}
+
+.company-job-applicants-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.company-job-applicants-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.2rem 1rem;
+    /* background: #000; */
+    border-radius: 22px;
+    border-left: 4px solid var(--main-color);
+    background: #fee2e2;
+}
+
+.company-job-applicants-header h3 {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    
+}
+
+.company-job-applicants-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    max-height: 200px;
+    /* background: #000; */
+    overflow: auto;
+}
+
+.company-application-candidate-card {
+    border-radius: 18px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background: #fee2e2;
+    text-align: start;
+    border: 1px solid #f5aaaa;
+    max-height: 200px;
+    overflow: auto;
+    font-size: smaller;
+
+}
+
+.company-application-candidate-head {
+    align-items: flex-start;
+}
+
+.company-application-candidate-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.9rem;
+}
+
+.company-application-candidate-grid div,
+.company-application-candidate-about {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.company-application-candidate-grid strong,
+.company-application-candidate-about strong {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.company-application-candidate-grid span,
+.company-application-candidate-about p {
+    opacity: 0.9;
+    line-height: 1.45;
+}
+
+.company-job-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.4rem;
+    padding: 2rem 1rem;
+    border-radius: 18px;
+    border: 1px dashed rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.03);
+}
+
+.page-empty {
+    background: var(--bg-container);
+}
+
+@media (max-width: 900px) {
+    .company-job-application-header,
+    .company-application-candidate-head {
+        flex-direction: column;
+    }
+
+    .company-job-applicants-list,
+    .company-application-candidate-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 768px) {
+
+    .company-job-applicants-list,
+    .company-application-candidate-grid {
+        grid-template-columns: repeat(1, 1fr);
+
+    }
+}
+@media (max-width: 350px) {
+    .company-job-application-header {
+        padding: 0.75rem 1rem;
+        font-size: smaller;
+    }
+    .company-job-application-group {
+        padding: 0.75rem;
+        gap: 0.75rem;
+    }
+    .company-job-applicants-header {
+        display: flex;
+        padding: 0rem 0.75rem;
+        font-size: smaller;
+    }
+}

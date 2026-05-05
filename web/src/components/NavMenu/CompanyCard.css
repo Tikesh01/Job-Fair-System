@@ -1,0 +1,155 @@
+.company-card {
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem 1.2rem;
+    border-radius: 1rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    transition: all 0.2s ease;
+}
+
+.company-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.company-card-header,
+.company-card-meta,
+.company-card-contact,
+.company-card-details {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.company-card-header {
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.company-card-title {
+    display: flex;
+    gap: 0.85rem;
+}
+
+.company-card-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 1.2rem;
+}
+
+.company-card-title h2,
+.company-card-details h4,
+.company-card-details p {
+    margin: 0;
+}
+
+.company-card-badges {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.4rem;
+}
+
+.company-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.company-badge.verified {
+    color: #166534;
+    background: #dcfce7;
+}
+
+.company-badge.active {
+    color: #1d4ed8;
+    background: #dbeafe;
+}
+
+.company-badge.inactive {
+    color: #475569;
+    background: #e2e8f0;
+}
+
+.company-card-actions .expand-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.company-card-meta,
+.company-card-contact {
+    background: #f8fafc;
+    padding: 0.8rem 0.9rem;
+    border-radius: 0.8rem;
+}
+
+.company-card-meta div,
+.company-card-contact div {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: #475569;
+}
+
+.company-card-details {
+    flex-direction: column;
+    padding: 0;
+    text-align: start;
+}
+
+.company-card-details .detail-section {
+    background: #fcfcfd;
+    border: 1px solid #edf2f7;
+    border-radius: 0.9rem;
+    padding: 0.5rem 0.7rem;
+    text-align: start;
+}
+
+.company-card-details h4 {
+    margin-bottom: 0.45rem;
+    color: #1e293b;
+}
+
+.company-card-details p {
+    color: #475569;
+    line-height: 1.5;
+}
+
+@media (max-width: 500px) {
+    .company-card-details {
+        flex-direction: 0;
+    }
+}
+@media (max-width: 390px) {
+    .company-card {
+        gap: 0.8rem;
+        padding: 1rem ;
+    }
+}
+@media (max-width: 340px) {
+    .company-card {
+        padding: 0.8rem ;
+        font-size: smaller;
+    }
+    
+    .company-card-header {
+        gap: 0.75rem;
+    }
+}

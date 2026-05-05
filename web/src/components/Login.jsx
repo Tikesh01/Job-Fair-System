@@ -5,7 +5,7 @@ import { useState } from 'react'
 import api from '../api/axiosapi'
 import { useNotification } from '../contexts/NotificationContext'
 import { useNavigate } from 'react-router-dom'
-import {FaBuilding, FaGraduationCap, FaLifeRing, FaUniversity, } from 'react-icons/fa';
+import {FaBuilding, FaGraduationCap, FaLifeRing, FaUniversity, FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
 
 function Login(){
     const navigate = useNavigate()
@@ -14,6 +14,7 @@ function Login(){
     const [userRole, setRole] = useState('candidate')
     const [errors, setErrors] = useState({})
     const [password, setPassword] = useState('')
+    const [showPassword, setShowPassword] = useState(false)
 
     const roleOptions = [
         { value: 'candidate', label: 'Candidate', icon: <FaGraduationCap /> },
@@ -54,7 +55,7 @@ function Login(){
                     setErrors({})
                     window.dispatchEvent(new Event('authUpdated'))
                     notify('success', "You Are Logged In Successfully")
-                    return navigate('/dashboard')
+                    return navigate(`/${userRole}`)
 
                 }
             } catch (error) {
@@ -86,15 +87,15 @@ function Login(){
                         <div className={`role-options ${errors.role ? 'error' : ''}`}>
                         {roleOptions.map((role) => (
                             <label key={role.value} className={`role-option ${userRole === role.value ? 'selected' : ''}`}>
-                            <input
-                                type="radio"
-                                name="role"
-                                value={role.value}
-                                checked={userRole === role.value}
-                                onChange={handleChange}
-                            />
-                            <span className="role-icon" title={role.label}>{role.icon}</span>
-                            <span className="role-label">{role.label}</span>
+                                <input
+                                    type="radio"
+                                    name="role"
+                                    value={role.value}
+                                    checked={userRole === role.value}
+                                    onChange={handleChange}
+                                />
+                                <i className="role-icon" title={role.label}>{role.icon}</i>
+                                <span className={`role-label ${userRole === role.value ? 'selected' : ''}`}>{role.label}</span>
                             </label>
                         ))}
                         </div>
@@ -114,17 +115,23 @@ function Login(){
                     </div>
                     <div className="form-group">
                         <label htmlFor="login-password"><i className="fas fa-lock"></i> Password</label>
-                        <input 
-                            type="password"
-                            name="login-password"
-                            id='login-password'
-                            placeholder='Enter the password'
-                            value={password}
-                            onChange={handleChange}
-                        />
+                        <div className="password-input-wrapper">
+                            <input 
+                                type={showPassword ? 'text' : 'password'}
+                                name="login-password"
+                                id='login-password'
+                                placeholder='Enter the password'
+                                value={password}
+                                onChange={handleChange}
+                            />
+                            <span type="button" className="toggle-password" onClick={() => setShowPassword(!showPassword)}>
+                                {showPassword ? <span><FaRegEyeSlash /></span> : <span><FaRegEye /></span> }
+                            </span>
+                        </div>
                         {errors.password && <span className="error-massage">{errors.password}</span>}
                     </div>
-                    {errors.error && <span className="error-massage">{errors.error}</span>}
+                    
+                    {errors.error && <span className="error-massage"><br />{errors.error}</span>}
                    
                     <button type="submit" className="btn btn-s btn-primary">Login</button>
                     

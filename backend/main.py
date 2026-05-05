@@ -4,7 +4,17 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 import uvicorn
 from database import Db
-from models import otpRequest, otpVerify, UserRegister, loginRequest
+from models import (
+    otpRequest,
+    otpVerify,
+    userRegister,
+    loginRequest,
+    JobRoleCreate,
+    JobRoleUpdate,
+    JobRoleResponse,
+    HrCreate,
+    HrUpdate,
+)
 import random
 import string
 import re
@@ -28,11 +38,16 @@ allow_credentials = os.getenv("ALLOW_CREDENTIAL")
 app = FastAPI(title="Job-Fair-System",debug=debug)
 app.add_middleware(CORSMiddleware,allow_origins=[frontend_origin],allow_methods=["*"], allow_credentials=allow_credentials, allow_headers=["*"])
 
+#need to change the logic in production 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
+    errors = exc.errors()
+    error_details = []
+    for error in errors:
+        error_details.append(f"{error['loc']}: {error['msg']}")
     return JSONResponse(
         status_code=422,
-        content={"detail": "Invalid request data. Please check your input."},
+        content={"detail": " | ".join(error_details), "errors": errors},
     )
 
 #Databse config
@@ -154,6 +169,7 @@ def login(loginObj:loginRequest):
     response = JSONResponse({"message": "Login successful"})
     response.set_cookie(key="token", value=access_token , secure=False, samesite="strict", max_age=3600)
     response.set_cookie(key="role", value=role, secure=False, samesite="strict", max_age=3600)
+    response.set_cookie(key=f"{role}_id", value=user['user_id'], secure=False, samesite="strict", max_age=3600)
     response.set_cookie(key="expiry_time", value=datetime.now()+minutes, secure=False, samesite="strict", max_age=3600)
     return response 
 
@@ -202,7 +218,6 @@ def isStrongPass(password:str):
     lowercase_error = re.search(r"[a-z]", password) is None
     special_char_error = re.search(r"[@$!%*?&]", password) is None
 
-    # Check if all criteria are met
     if not (length_error or digit_error or uppercase_error or lowercase_error or special_char_error):
         return True
     
@@ -222,7 +237,7 @@ def isDuplicateUser(email:str):
     return len(result) > 0
 
 @app.post("/register")
-def register_user(request: UserRegister):
+def register_user(request: userRegister):
     email = request.email
     otp = request.otp
     role = validate_role(request.role) 
@@ -248,18 +263,7 @@ def register_user(request: UserRegister):
     db.query(Q=q, params=(email, password), commit=True)
     return {"message": "Registration successful"}
 
-
-@app.get('/companies', response_model=list)
-def get_company_list():
-    try:
-        companies = db.getTable('company')
-        print(companies)
-        return companies
-
-    except Exception as e:
-        raise HTTPException(status_code=400, detail="Some Errro occured")
-    
-@app.get("/user/detail")
+@app.get("/profile")
 @require_roles("candidate","university","company")
 def get_user_details(request:Request):
     try:
@@ -271,21 +275,98 @@ def get_user_details(request:Request):
         user_id = payload.get('sub')
 
         user = db.query(f'SELECT * FROM {role} WHERE {role}_id = %s',params=(user_id,))
+
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
+        userData = user[0]
+        userData['role'] = role
 
-        return user[0]
+        if role=='company':
+            userData['company_type_obj'] =  company_type_by_id(userData['industry_type_id'])
+
+        return userData
        
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=500, detail=e )
+
+@app.put("/profile")
+@require_roles("candidate","university","company")
+def update_profile(request:Request, data:dict): 
+    if not data:
+        raise HTTPException(status_code=400, detail="No Changes detected")
+    if 'email' in data:
+        raise HTTPException(status_code=400, detail="Email cannot be changed!")
     
+    try:
+        payload = request.state.user
+        id = payload.get('sub')
+        role = payload.get('role')
+
+        if role == 'candidate':
+            if 'is_eligible' in data:
+                raise HTTPException(status_code=400, detail="Cannot be chnaged!")
+            if 'course_id' in data:
+                course_id = int(data['course_id'])
+                if course_id > 33 or course_id < 1:
+                    raise HTTPException(status_code=400, detail="Wrong Course Selection!")
+                branch_obj_list = course_branches_by_course_id(course_id)
+                if 'branch_id' in data:
+                    branch_id = int(data['branch_id'])
+                    if not any(branch['branch_id'] == branch_id for branch in branch_obj_list):  
+                        raise HTTPException(status_code=400, detail="Wrong Branch Selection")
+                elif 'branch_id' not in data:
+                    data['branch_id'] = branch_obj_list[0]['branch_id']
+
+        set_clause = ", ".join([f"{k} = %s" for k in data.keys()])
+        q = f"""
+                UPDATE {role}
+                SET
+                    {set_clause}
+                WHERE {role}_id = %s;
+            """
+        params = list(data.values()) + [id]
+        db.query(q, params=tuple(params), commit=True)
+        return {'msg' : "Profile updated Successfully"}
+    except HTTPException: 
+        raise
+    except Exception as e:  
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/vacancy/posted", response_model=list)
+def get_posted_vancancies(request:Request):
+    vacancy_list  = db.query('SELECT * FROM job_role jr WHERE jr.is_posted = 1')
+    if len(vacancy_list) == 0:
+        raise HTTPException(status_code=404, detail='No Vacancies Found')
+    return vacancy_list 
+
+@app.get("/companies", response_model=list)
+def get_verified_companies():
+    company_list = db.query(
+        """
+        SELECT
+            c.avatar,c.name, c.is_verified, c.is_active, c.email, c.contact,c.city, c.state,c.about,c.address, c.job_application_count,
+            ct.type AS industry_type_name
+        FROM company c
+        LEFT JOIN company_type ct ON ct.id = c.industry_type_id
+        WHERE c.is_verified = 1
+        ORDER BY c.is_active DESC, c.job_application_count DESC, c.created_at DESC
+        """
+    )
+
+    if len(company_list) == 0:
+        raise HTTPException(status_code=404, detail="No verified companies found")
+
+    return company_list
+######################################## == Candidate == ################################################
 @app.get("/courses")
 @require_roles("candidate")
 def get_all_courses_list(request:Request):
     try:
         result = db.getTable('course')
+        if len(result) == 0:
+            raise HTTPException(status_code=404, detail='No Courses Found')
         return result
     except Exception as e:
         raise HTTPException(status_code=400,detail="Error occured")
@@ -347,51 +428,8 @@ def get_candidate_branch_detail(request:Request, branch_id:int):
         return result[0]
     except Exception as e:
         raise HTTPException(status_code=400, detail="Error Occured")
-
-@app.post("/profile/update")
-@require_roles("candidate","university","company")
-def edit_profile(request:Request, data:dict): 
-    if not data:
-        raise HTTPException(status_code=400, detail="No Changes detected")
-    if 'email' in data:
-        raise HTTPException(status_code=400, detail="Email cannot be changed!")
     
-    try:
-        payload = request.state.user
-        id = payload.get('sub')
-        role = payload.get('role')
-
-        if role == 'candidate':
-            if 'is_eligible' in data:
-                raise HTTPException(status_code=400, detail="Cannot be chnaged!")
-            if 'course_id' in data:
-                course_id = int(data['course_id'])
-                if course_id > 33 or course_id < 1:
-                    raise HTTPException(status_code=400, detail="Wrong Course Selection!")
-                branch_obj_list = course_branches_by_course_id(course_id)
-                if 'branch_id' in data:
-                    branch_id = int(data['branch_id'])
-                    if not any(branch['branch_id'] == branch_id for branch in branch_obj_list):  
-                        raise HTTPException(status_code=400, detail="Wrong Branch Selection")
-                elif 'branch_id' not in data:
-                    data['branch_id'] = branch_obj_list[0]['branch_id']
-
-        set_clause = ", ".join([f"{k} = %s" for k in data.keys()])
-        q = f"""
-                UPDATE {role}
-                SET
-                    {set_clause}
-                WHERE {role}_id = %s;
-            """
-        params = list(data.values()) + [id]
-        db.query(q, params=tuple(params), commit=True)
-        return {'msg' : "Profile updated Successfully"}
-    except HTTPException: 
-        raise
-    except Exception as e:  
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/candidate/links")
+@app.get("/candidate/link")
 @require_roles("candidate")
 def get_candidate_links(request:Request):
     try:
@@ -404,7 +442,7 @@ def get_candidate_links(request:Request):
     except Exception as e:
         raise HTTPException(status_code=400, detail='Cant Find links error')
     
-@app.post("/candidate/link/update")
+@app.put("/candidate/link/")
 @require_roles('candidate')
 def update_candidate_link(request:Request, urlObj:dict):
     print(urlObj)
@@ -420,7 +458,7 @@ def update_candidate_link(request:Request, urlObj:dict):
 
 @app.delete("/candidate/link/{link_id}")
 @require_roles('candidate')
-def update_candidate_link(request:Request, link_id:int):
+def delete_candidate_link(request:Request, link_id:int):
     try:
         user = request.state.user
         user_id = user.get('sub')
@@ -437,9 +475,9 @@ def is_safe_links_count(candidate_id):
     print(result)
     return bool(len(result) < 3)
     
-@app.post("/candidate/link/create")
+@app.post("/candidate/link/")
 @require_roles('candidate')
-def update_candidate_link(request:Request, urlObj:dict):
+def create_candidate_link(request:Request, urlObj:dict):
     try:
         user = request.state.user
         user_id = user.get('sub')
@@ -451,6 +489,572 @@ def update_candidate_link(request:Request, urlObj:dict):
         return {'msg' : "Link Creation Success"}
     except Exception as e:
         raise HTTPException(status_code=400, detail="Some Error Occured while creating Link")
+
+def vacancy_check(job_role_id, candidate_id, apply=False):
+    if apply:
+        closed = db.query('SELECT is_closed FROM job_role WHERE job_role_id = %s',params=(job_role_id, ))[0]
+        if closed['is_closed'] == 1:
+            raise HTTPException(status_code=400, detail='Closed Vacancies Cannot be Applied')
+    applied =  db.query('SELECT * FROM job_application ja WHERE ja.job_role_id = %s AND ja.candidate_id = %s AND is_applied = 1',params=(job_role_id, candidate_id, ))
+    if len(applied) > 0:
+        raise HTTPException(status_code=400, detail='Vacancy already Applied')
+    
+    selected = db.query('SELECT * FROM job_application ja WHERE ja.job_role_id = %s AND ja.candidate_id = %s',params=(job_role_id, candidate_id, ))
+    if len(selected) > 0 and apply:
+        db.query('UPDATE job_application ja SET ja.is_applied = 1 WHERE job_role_id = %s AND candidate_id = %s', params=(job_role_id, candidate_id, ), commit=True)
+        raise HTTPException(status_code=200, detail='Appplication Filed')
+    if len(selected) > 0:
+        raise HTTPException(status_code=400, detail='Vacancy already selected')
+    count = 10
+    if apply:
+        count = len(db.query(
+            'SELECT * FROM job_application ja WHERE ja.candidate_id = %s AND is_applied = 1',
+            params=(candidate_id, )
+            ))
+    else: 
+        count = len(db.query(
+            'SELECT * FROM job_application ja WHERE ja.candidate_id = %s AND is_applied = 0',
+            params=(candidate_id, )
+            ))
+    print(count)
+    if count >= (5 if apply else 10):
+        raise HTTPException(status_code=400, detail='Apply or Selection Limit Reached')
+    
+    return True
+
+@app.post('/candidate/vacancy/{job_role_id}/select')
+@require_roles('candidate')
+def select_vacancy(request:Request, job_role_id:int):
+    payload = request.state.user
+    candidate_id = payload.get('sub')
+    if vacancy_check(job_role_id, candidate_id):
+        db.query('INSERT INTO job_application(candidate_id, job_role_id) VALUES ( %s, %s)', params=(candidate_id, job_role_id), commit=True)
+        return {'msg':'Vacancy selection Success'}
+
+    return {'msg':'Vacancy selection Success'}
+
+@app.post('/candidate/vacancy/{job_role_id}/apply')
+@require_roles('candidate')
+def apply_vacancy(request:Request, job_role_id:int):
+    payload = request.state.user
+    candidate_id = payload.get('sub')
+    if vacancy_check(job_role_id, candidate_id, apply=True):
+        db.query('INSERT INTO job_application(is_applied, candidate_id, job_role_id) VALUES (1, %s, %s)', params=(candidate_id, job_role_id), commit=True)
+        db.query('UPDATE candidate SET job_application_count = job_application_count + 1 WHERE candidate_id = %s',params=(candidate_id, ),commit=True)
+        return {'msg':'Vacancy Application Success'}
+
+@app.get('/candidate/vacancy')
+@require_roles('candidate')
+def get_candidate_vacancies(request:Request):
+    payload = request.state.user
+    candidate_id = payload.get('sub')
+
+    vacancy_list = db.query(
+        '''
+        SELECT jr.*, ja.is_applied, ja.application_id
+        FROM job_application ja
+        JOIN job_role jr ON jr.job_role_id = ja.job_role_id
+        WHERE ja.candidate_id = %s
+        ORDER BY ja.is_applied DESC, jr.is_closed ASC, jr.job_role_id DESC
+        ''',
+        params=(candidate_id, )
+    )
+
+    selected = [vacancy for vacancy in vacancy_list if not vacancy.get('is_applied')]
+    applied = [vacancy for vacancy in vacancy_list if vacancy.get('is_applied')]
+
+    return {
+        'selected': selected,
+        'applied': applied
+    }
+
+@app.delete('/candidate/vacancy/{job_role_id}')
+@require_roles('candidate')    
+def delete_select_vacancy(request:Request, job_role_id:int):
+    payload = request.state.user
+    candidate_id = payload.get('sub')
+
+    exists = db.query('SELECT * FROM job_application ja WHERE ja.job_role_id = %s AND ja.candidate_id = %s AND is_applied = 0',params=(job_role_id, candidate_id))
+    if len(exists) == 0:
+        raise HTTPException(status_code=400, detail='not Authorized to operate vacancy')
+    
+    db.query('DELETE FROM job_application WHERE job_role_id = %s AND candidate_id = %s AND is_applied = 0', params=(job_role_id, candidate_id), commit=True)
+    
+    return {'msg': 'Selected Vacancy Successfully Removed'}
+
+
+################################### == Company == ###################################
+
+def company_type_by_id(id):
+    q = "SELECT * FROM company_type WHERE id = %s"
+    result = db.query(q, params=(id, ))
+    if result:
+        return result[0]
+    else:
+        return {}
+
+@app.get("/company/types")
+@require_roles("company")
+def get_all_company_types(request:Request):
+    try:
+        rs = db.getTable('company_type')
+        return rs
+    except Exception as e:
+        return []
+    
+def validate_hr_payload(hr_obj):
+    if hr_obj.contact is not None:
+        if not hr_obj.contact.isdigit():
+            raise HTTPException(status_code=400, detail="Contact must contain exactly 10 digits")
+
+    if hr_obj.linkedin_url is not None and hr_obj.linkedin_url.strip() == "":
+        raise HTTPException(status_code=400, detail="LinkedIn URL cannot be empty")
+
+    if hr_obj.department is not None and hr_obj.department.strip() == "":
+        raise HTTPException(status_code=400, detail="Department cannot be empty")
+
+def ensure_company_can_manage_hr(company_id):
+    company = db.query(
+        "SELECT company_id FROM company WHERE company_id = %s",
+        params=(company_id,),
+    )
+    if not company:
+        raise HTTPException(status_code=404, detail="Company not found")
+    return company[0]
+
+def get_hr_for_company_or_404(hr_id, company_id):
+    result = db.query(
+        "SELECT * FROM hr WHERE id = %s AND company_id = %s",
+        params=(hr_id, company_id),
+    )
+    if not result:
+        raise HTTPException(status_code=404, detail="HR not found")
+    return result[0]
+
+@app.get("/company/hr", response_model=list)
+@require_roles("company")
+def get_company_hrs(request: Request):
+    try:
+        payload = request.state.user
+        company_id = payload.get("sub")
+        return db.query(
+            "SELECT * FROM hr WHERE company_id = %s ORDER BY is_primary DESC, id DESC",
+            params=(company_id,)
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching HR records: {str(e)}")
+
+
+@app.post("/company/hr")
+@require_roles("company")
+def create_company_hr(request: Request, hr_obj: HrCreate):
+    try:
+        payload = request.state.user
+        company_id = payload.get("sub")
+        company = ensure_company_can_manage_hr(company_id)
+        validate_hr_payload(hr_obj)
+
+        existing_count = db.query(
+            "SELECT COUNT(*) AS total FROM hr WHERE company_id = %s",
+            params=(company_id,),
+        )[0]["total"]
+        total_limit = 3
+        if existing_count >= total_limit:
+            raise HTTPException(status_code=400, detail=f"Maximum HR limit reached ({total_limit})")
+
+        if hr_obj.is_primary:
+            db.query(
+                "UPDATE hr SET is_primary = 0 WHERE company_id = %s",
+                params=(company_id,),
+                commit=True,
+            )
+
+        db.query(
+            """
+            INSERT INTO hr (name, email, contact, designation, department, linkedin_url, is_primary, company_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """,
+            params=(
+                hr_obj.name.strip(),
+                hr_obj.email,
+                hr_obj.contact.strip(),
+                hr_obj.designation.strip(),
+                hr_obj.department.strip() if hr_obj.department else None,
+                hr_obj.linkedin_url.strip() if hr_obj.linkedin_url else None,
+                hr_obj.is_primary,
+                company_id,
+            ),
+            commit=True,
+        )
+        return {"message": "HR created successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating HR: {str(e)}")
+
+
+@app.put("/company/hr/{hr_id}")
+@require_roles("company")
+def update_company_hr(request: Request, hr_id: int, hr_obj: HrUpdate):
+    try:
+        payload = request.state.user
+        company_id = payload.get("sub")
+        get_hr_for_company_or_404(hr_id, company_id)
+        validate_hr_payload(hr_obj)
+
+        update_fields = {}
+        if hr_obj.name is not None:
+            update_fields["name"] = hr_obj.name.strip()
+        if hr_obj.email is not None:
+            update_fields["email"] = hr_obj.email
+        if hr_obj.contact is not None:
+            update_fields["contact"] = hr_obj.contact.strip()
+        if hr_obj.designation is not None:
+            update_fields["designation"] = hr_obj.designation.strip()
+        if hr_obj.department is not None:
+            update_fields["department"] = hr_obj.department.strip() or None
+        if hr_obj.linkedin_url is not None:
+            update_fields["linkedin_url"] = hr_obj.linkedin_url.strip() or None
+        if hr_obj.is_primary is not None:
+            update_fields["is_primary"] = hr_obj.is_primary
+
+        if not update_fields:
+            raise HTTPException(status_code=400, detail="No fields to update")
+
+        if hr_obj.is_primary:
+            db.query(
+                "UPDATE hr SET is_primary = 0 WHERE company_id = %s",
+                params=(company_id,),
+                commit=True,
+            )
+
+        set_clause = ", ".join([f"{field} = %s" for field in update_fields.keys()])
+        params = list(update_fields.values()) + [hr_id, company_id]
+        db.query(
+            f"UPDATE hr SET {set_clause} WHERE id = %s AND company_id = %s",
+            params=tuple(params),
+            commit=True,
+        )
+        return {"message": "HR updated successfully", "id": hr_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating HR: {str(e)}")
+
+
+@app.delete("/company/hr/{hr_id}")
+@require_roles("company")
+def delete_company_hr(request: Request, hr_id: int):
+    try:
+        payload = request.state.user
+        company_id = payload.get("sub")
+        get_hr_for_company_or_404(hr_id, company_id)
+        db.query(
+            "DELETE FROM hr WHERE id = %s AND company_id = %s",
+            params=(hr_id, company_id),
+            commit=True,
+        )
+        return {"message": "HR deleted successfully", "id": hr_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting HR: {str(e)}")
+    
+@app.get('/company/vacancy', response_model=list)
+@require_roles('company')
+def get_vacancys_of_company(request:Request):
+    try:
+        payload = request.state.user
+        company_id = payload.get('sub')
+        
+        q = 'SELECT * FROM job_role WHERE company_id = %s ORDER BY is_posted DESC, is_closed DESC'
+        vacancy_list = db.query(q, params=(company_id, ))
+
+        if not vacancy_list:
+            vacancy_list = []
+
+        return vacancy_list
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching vacancies: {str(e)}")
+
+@app.post('/company/vacancy')
+@require_roles('company')
+def create_vacancy(request:Request, vacancyObj:JobRoleCreate):
+    try:
+        payload = request.state.user
+        company_id = payload.get('sub')
+        company_email = payload.get('email')
+        
+        company_check = db.query(
+            "SELECT company_id, is_active, is_verified FROM company WHERE company_id = %s",
+            params=(company_id,)
+        )
+        
+        if not company_check:
+            raise HTTPException(status_code=404, detail="Company not found")
+        
+        company = company_check[0]
+        
+        if not company['is_active']:
+            raise HTTPException(status_code=403, detail="Company account is not active")
+        
+        if not company['is_verified']:
+            raise HTTPException(status_code=403, detail="Company account is not verified")
+       
+        if vacancyObj.salary <= 0:
+            raise HTTPException(status_code=400, detail="Salary must be greater than 0")
+        
+        if vacancyObj.vacancy_count > vacancyObj.max_application_count:
+            raise HTTPException(
+                status_code=400, 
+                detail="Vacancy count cannot exceed max application count"
+            )
+        
+        if vacancyObj.vacancy_count <= 0:
+            raise HTTPException(status_code=400, detail="Vacancy count must be greater than 0")
+        
+        if vacancyObj.max_application_count <= 0:
+            raise HTTPException(status_code=400, detail="Max application count must be greater than 0")
+
+        if len(vacancyObj.job_role_title) > 30:
+            raise HTTPException(status_code=400, detail="Job title cannot exceed 30 characters")
+        
+        if not vacancyObj.job_location.strip():
+            raise HTTPException(status_code=400, detail="Job location cannot be empty")
+        
+        if not vacancyObj.job_role_description.strip():
+            raise HTTPException(status_code=400, detail="Job description cannot be empty")
+        
+        if not vacancyObj.eligibility.strip():
+            raise HTTPException(status_code=400, detail="Eligibility criteria cannot be empty")
+        
+        if not vacancyObj.selection_flow.strip():
+            raise HTTPException(status_code=400, detail="Selection process cannot be empty")
+
+        insert_fields = {
+            'job_role_title': vacancyObj.job_role_title,
+            'job_role_description': vacancyObj.job_role_description,
+            'job_type': vacancyObj.job_type.value,  
+            'job_location': vacancyObj.job_location,
+            'salary': vacancyObj.salary,
+            'vacancy_count': vacancyObj.vacancy_count,
+            'max_application_count': vacancyObj.max_application_count,
+            'eligibility': vacancyObj.eligibility,
+            'selection_flow': vacancyObj.selection_flow,
+            'company_id': company_id,
+        }
+        
+        columns = ", ".join(insert_fields.keys())
+        placeholders = ", ".join(["%s"] * len(insert_fields))
+        insert_query = f"INSERT INTO job_role ({columns}) VALUES ({placeholders})"
+        
+        params = tuple(insert_fields.values())
+        
+        db.query(insert_query, params=params, commit=True)
+        
+        return {
+            "message": "Vacancy created successfully",
+            "company_id": company_id,
+            "job_role_title": vacancyObj.job_role_title
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating vacancy: {str(e)}")
+    
+def vacancy_vadidate(job_role_id, company_id, is_closed=None):
+    vacancy_check = db.query(
+        "SELECT company_id, is_posted FROM job_role WHERE job_role_id = %s",
+        params=(job_role_id,)
+    )
+    
+    if not vacancy_check:
+        raise HTTPException(status_code=404, detail="Vacancy not found")
+    
+    vacancy = vacancy_check[0]
+    if vacancy['company_id'] != int(company_id):
+        raise HTTPException(status_code=403, detail="You are not authorized to operate this this vacancy")
+        
+    if vacancy['is_posted'] == True and is_closed is None: # ensures only  is_closed can be updated
+        raise HTTPException(status_code=403, detail="Vacancy is public can't be Changed or deleted, please close")
+    
+    return True
+
+
+@app.put('/company/vacancy/{job_role_id}')
+@require_roles('company')
+def update_vacancy(request: Request, job_role_id: int, vacancyObj: JobRoleUpdate):
+    try:
+        payload = request.state.user
+        company_id = payload.get('sub')
+        
+        
+        if not vacancy_vadidate(job_role_id,company_id,vacancyObj.is_closed ):
+            raise HTTPException
+    
+        update_fields = {}
+        if vacancyObj.job_role_title is not None:
+            if len(vacancyObj.job_role_title) > 60:
+                raise HTTPException(status_code=400, detail="Job title cannot exceed 30 characters")
+            update_fields['job_role_title'] = vacancyObj.job_role_title
+        
+        if vacancyObj.job_role_description is not None:
+            if not vacancyObj.job_role_description.strip():
+                raise HTTPException(status_code=400, detail="Job description cannot be empty")
+            update_fields['job_role_description'] = vacancyObj.job_role_description
+        
+        if vacancyObj.job_type is not None:
+            update_fields['job_type'] = vacancyObj.job_type.value
+        
+        if vacancyObj.job_location is not None:
+            if not vacancyObj.job_location.strip():
+                raise HTTPException(status_code=400, detail="Job location cannot be empty")
+            update_fields['job_location'] = vacancyObj.job_location
+        
+        if vacancyObj.salary is not None:
+            if vacancyObj.salary <= 0:
+                raise HTTPException(status_code=400, detail="Salary must be greater than 0")
+            update_fields['salary'] = vacancyObj.salary
+        
+        if vacancyObj.vacancy_count is not None:
+            if vacancyObj.vacancy_count <= 0:
+                raise HTTPException(status_code=400, detail="Vacancy count must be greater than 0")
+            update_fields['vacancy_count'] = vacancyObj.vacancy_count
+        
+        if vacancyObj.max_application_count is not None:
+            if vacancyObj.max_application_count <= 0:
+                raise HTTPException(status_code=400, detail="Max application count must be greater than 0")
+            update_fields['max_application_count'] = vacancyObj.max_application_count
+        
+        if vacancyObj.eligibility is not None:
+            if not vacancyObj.eligibility.strip():
+                raise HTTPException(status_code=400, detail="Eligibility criteria cannot be empty")
+            update_fields['eligibility'] = vacancyObj.eligibility
+        
+        if vacancyObj.selection_flow is not None:
+            if not vacancyObj.selection_flow.strip():
+                raise HTTPException(status_code=400, detail="Selection process cannot be empty")
+            update_fields['selection_flow'] = vacancyObj.selection_flow
+        
+        if vacancyObj.is_closed is not None:
+            update_fields['is_closed'] = vacancyObj.is_closed
+        
+        if vacancyObj.date_of_interview is not None:
+            update_fields['date_of_interview'] = vacancyObj.date_of_interview
+        
+        if vacancyObj.alloted_time is not None:
+            update_fields['alloted_time'] = vacancyObj.alloted_time
+        
+        if vacancyObj.alloted_location is not None:
+            update_fields['alloted_location'] = vacancyObj.alloted_location
+        
+        if vacancyObj.is_posted is not None and vacancyObj.is_posted != False:
+            update_fields['is_posted'] = vacancyObj.is_posted
+        
+        if not update_fields:
+            raise HTTPException(status_code=400, detail="No fields to update")
+        
+        if 'vacancy_count' in update_fields and 'max_application_count' in update_fields:
+            if update_fields['vacancy_count'] > update_fields['max_application_count']:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Vacancy count cannot exceed max application count"
+                )
+        
+        # Build and execute update query
+        set_clause = ", ".join([f"{k} = %s" for k in update_fields.keys()])
+        update_query = f"UPDATE job_role SET {set_clause} WHERE job_role_id = %s"
+        
+        params = list(update_fields.values()) + [job_role_id]
+        db.query(update_query, params=tuple(params), commit=True)
+        
+        return {
+            "message": "Vacancy updated successfully",
+            "job_role_id": job_role_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating vacancy: {str(e)}")
+
+
+@app.delete('/company/vacancy/{job_role_id}')
+@require_roles('company')
+def delete_vacancy(request: Request, job_role_id: int):
+    try:
+        payload = request.state.user
+        company_id = payload.get('sub')
+        
+        if not vacancy_vadidate(job_role_id,company_id):
+            raise HTTPException
+        
+        delete_query = "DELETE FROM job_role WHERE job_role_id = %s AND company_id = %s"
+        db.query(delete_query, params=(job_role_id, company_id), commit=True)
+        
+        return {
+            "message": "Vacancy deleted successfully",
+            "job_role_id": job_role_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting vacancy: {str(e)}")
+    
+    
+@app.get('/company/job/applications')
+@require_roles('company')
+def get_company_job_applications(request:Request):
+    try:
+        payload = request.state.user
+        company_id = payload.get('sub')
+
+        applications = db.query(
+            '''
+            SELECT
+                jr.*,
+                ja.application_id,
+                ja.candidate_id AS applicant_id,
+                ja.is_applied,
+                c.name AS candidate_name,
+                c.university_name,
+                crs.course_title,
+                br.branch_title
+            FROM job_role jr
+            LEFT JOIN job_application ja
+                ON ja.job_role_id = jr.job_role_id
+                AND ja.is_applied = 1
+            LEFT JOIN candidate c
+                ON c.candidate_id = ja.candidate_id
+            LEFT JOIN course crs
+                ON crs.course_id = c.course_id
+            LEFT JOIN branch br
+                ON br.branch_id = c.branch_id
+            WHERE jr.company_id = %s
+            ORDER BY jr.is_closed ASC, jr.job_role_id DESC, ja.application_id DESC
+            ''',
+            params=(company_id, )
+        )
+
+        return applications or []
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching company applications: {str(e)}")
+
+@app.get('/company/{company_id}')
+def get_company_detail_by_id(company_id:int):
+    company_list = db.query("""
+        SELECT c.name
+        FROM company c WHERE company_id = %s
+        """,
+        params=(company_id, )
+        )
+    if len(company_list) == 0:
+        raise HTTPException(status_code=404, detail=f'Company with company id {company_id} not found!')
+    
+    return company_list[0]
 
 if __name__ == "__main__":
     uvicorn.run(app="main:app",host=host,port=port, reload=True)

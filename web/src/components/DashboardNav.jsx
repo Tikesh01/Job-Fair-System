@@ -1,31 +1,33 @@
-import './DashboardNavMenu.css'
+import './DashboardNav.css'
 import {getCookie} from '../utils/cookies';
-import { FaBriefcase, FaList, FaBuilding, FaGraduationCap, FaUser, FaEdit, FaUsers, FaFolder, FaRegFolder, FaFile, FaFileAlt } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+
 const candidateDashMenu = [
-    {title:'Job Applications',to:'/dashboard/job/applications', text:'Applcation', icon:<FaBriefcase />},
-    {title:'Job Roles',to:'/dashboard/job', text:'Vacancy', icon:<FaList />},
-    {title:'Companies',to:'/dashboard/company', text:'Company', icon:<FaBuilding />},
-    {title:'Workshops',to:'/dashboard/workshop', text:'Workshop', icon:<FaGraduationCap />},
-    {title:'Candidate profile',to:'/dashboard', text:'Pofile', icon:<FaUser />}
+    {title:'Manage Applications',to:'/candidate/job/applications', text:'Applcation', icon:<i className='fas fa-briefcase'></i>},
+    {title:'Select Vacancies',to:'/candidate/job', text:'Vacancy', icon:<i className='fas fa-cubes'></i>},
+    {title:'See Companies',to:'/candidate/company', text:'Company', icon:<i className='fas fa-building'></i>},
+    {title:'Select Workshops',to:'/candidate/workshop', text:'Workshop', icon:<i className='fas fa-graduation-cap'></i>},
+    {title:'Profile',to:'/candidate', text:'Pofile', icon:<i className='fas fa-user'></i>}
 ];
+
 const companyDashMenu = [
-    {title:'Applications from Candidates',to:'/dashboard/job/applications', text:'Applications', icon:<FaFileAlt />},
-    {title:'Your Created Job Roles',to:'/dashboard/job', text:'Vacancy', icon:<FaEdit />},
-    {title:'Your HR',to:'/dashboard/hr', text:'HR', icon:<FaUsers />},
-    {title:'Profile',to:'/dashboard', text:'Profile', icon:<FaUser />}
+    {title:'Manage Apllications',to:'/company/job/applications', text:'Applications', icon:<i className='fas fa-file-alt'></i>},
+    {title:'Manage Vacancies',to:'/company/vacancy', text:'Job Roles', icon:<i className='fas fa-edit'></i>},
+    {title:'Manage HRs',to:'/company/hr', text:'HR', icon:<i className='fas fa-users'></i>},
+    {title:'Profile',to:'/company', text:'Profile', icon:<i className='fas fa-user'></i>}
 ];
 
 const UniversityDashMenu = [
-    {title:'Your Candidates',to:'/dashboard', text:'Candidates', icon:<FaUsers />},
-    {title:'Profile',to:'/dashboard', text:'Profile', icon:<FaUser />}
+    {title:'Manage Candidates',to:'/dashboard', text:'Candidates', icon:<i className='fas fa-users'></i>},
+    {title:'Profile',to:'/dashboard', text:'Profile', icon:<i className='fas fa-user'></i>}
 ];
 
 const publicDashMenu = [
-    {title:'All Listed Job Roles',to:'/job', text:'Jobs', icon:<FaList />},
-    {title:'Listed Companies',to:'/company', text:'Companies', icon:<FaBuilding />},
+    {title:'All Listed Job Roles',to:'/job', text:'Jobs', icon:<i className='fas fa-list'></i>},
+    {title:'Listed Companies',to:'/company', text:'Companies', icon:<i className='fas fa-building'></i>},
 ];
-export default function MobileNavMenu(){
+
+export default function DashboardNav(){
     const token = getCookie("token")
     const role = getCookie("role")
     const currentPath = localStorage.getItem('currentLoc')
@@ -42,8 +44,8 @@ export default function MobileNavMenu(){
                                 title={link.title} 
                                 className={link.to === currentPath ?'dashboardlink active':'dashboardlink'} to={link.to}
                             >
-                                <span className='link-icon'>{link.icon}</span>
-                                <span className="link-text"> {link.text}</span>
+                                <span className='db-nav-icon'>{link.icon}</span>
+                                <span className="db-nav-text"> {link.text}</span>
                             </Link>
                         ))
                     }
@@ -53,8 +55,8 @@ export default function MobileNavMenu(){
                     {
                         companyDashMenu.map(link=>(
                             <Link key={link.to} title={link.title} className={link.to === currentPath ?'dashboardlink active':'dashboardlink'} to={link.to}>
-                                <span className='link-icon'>{link.icon}</span>
-                                <span className="link-text"> {link.text}</span>
+                                <span className='db-nav-icon'>{link.icon}</span>
+                                <span className="db-nav-text"> {link.text}</span>
                             </Link>
                         ))
                     }
@@ -64,8 +66,8 @@ export default function MobileNavMenu(){
                     {
                         UniversityDashMenu.map(link=>(
                             <Link key={link.to} title={link.title} className={link.to === currentPath ?'dashboardlink active':'dashboardlink'} to={link.to}>
-                                <span className='link-icon'>{link.icon}</span>
-                                <span className="link-text"> {link.text}</span>
+                                <span className='db-nav-icon'>{link.icon}</span>
+                                <span className="db-nav-text"> {link.text}</span>
                             </Link>
                         ))
                     }
@@ -75,8 +77,8 @@ export default function MobileNavMenu(){
                 {
                     publicDashMenu.map(link=>(
                         <Link key={link.to} title={link.title} className={link.to === currentPath ?'dashboardlink active':'dashboardlink'} to={link.to}>
-                            <span className='link-icon'>{link.icon}</span>
-                            <span className="link-text"> {link.text}</span>
+                            <span className='db-nav-icon'>{link.icon}</span>
+                            <span className="db-nav-text"> {link.text}</span>
                         </Link>
                     ))
                 }

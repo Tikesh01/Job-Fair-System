@@ -12,7 +12,7 @@ const navLinks = [
   { to: '/about', label: 'About' },
   { to: '/contact', label: 'Contact' },
   { to: '/job', label: 'Jobs' },
-  { to: '/company', label: 'Companies' },
+  { to: '/company-list', label: 'Companies' },
 ];
 
 export default function Navbar() {
@@ -71,7 +71,7 @@ export default function Navbar() {
 
           <div className="navbar-actions">
             {token && role ? (
-              <NavLink to="/dashboard" className="btn-secondary-nav" onClick={closeMenu}>
+              <NavLink to={`/${role}`} className="btn-secondary-nav" onClick={closeMenu}>
                 Dashboard
               </NavLink>
             ) : (

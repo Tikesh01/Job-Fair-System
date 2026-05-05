@@ -22,14 +22,8 @@
     /* background: #917777; */
     color: gray;
 }
-.vertical-hr{
-    width: 0.5px;
-    height: 100px;
-    display: inline-block;
-    
-}
 .login-form-wrapper{
-    width: 34%;
+    width: 35%;
 
 }
 
@@ -45,6 +39,13 @@
 }
 .login-form{
     width: 100%;
+    padding: 0rem 2rem 2rem 2rem;
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid rgba(70, 69, 69, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(255, 255, 255, 0.171);
+    transition: all 0.3s ease;
 }
 .login-form input[type=radio]{
   display: none;
@@ -59,10 +60,10 @@
         margin: 0 auto;
     }
     .login-rafiki-image{
-        width: 45%;
+        width: 40%;
     }
     .login-form-wrapper{
-        width: 36%;
+        width: 37%;
 
     }
 }
@@ -76,19 +77,35 @@
         display: none;
     }
     .login-form-wrapper{
-        width: 100%;
+        width: 90%;
+        margin: 0 auto;
         
     }
 }
 
 @media (max-width: 490px){
     .login-container{
-        padding: 2em;
+        width: 90%;
+    }
+    .login-container{
+        padding: 1.5rem;
+    }
+    .login-form{
+        padding: 0rem;
+        border: none;
+    }
+}
+@media (max-width: 425px) {
+    .login-container{
+        width: 95%;
+    }
+    .login-form-wrapper{
+        width: 100%;
     }
 }
 
 @media (max-width: 390px){
     .login-container{
-        padding: 1em ;
+        padding: 1.2rem;
     }
 }

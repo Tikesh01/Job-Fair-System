@@ -5,7 +5,7 @@ import api from '../api/axiosapi'
 import signupImage from '../assets/mobile-login-animate.svg';
 import { useNavigate } from 'react-router-dom'
 import { useNotification } from '../contexts/NotificationContext';
-import { FaBuilding, FaGraduationCap, FaUniversity, FaUsers } from 'react-icons/fa';
+import { FaBuilding, FaGraduationCap, FaRegEye, FaRegEyeSlash, FaUniversity, FaUsers } from 'react-icons/fa';
 
 export default function Signup() {
   const {notify} = useNotification('')
@@ -194,7 +194,7 @@ export default function Signup() {
                         onChange={handleInputChange}
                       />
                       <i className='role-icon'>{role.icon}</i>
-                      <span className="role-label">{role.label}</span>
+                      <span className={`role-label ${formData.role === role.value ? 'selected' : ''}`}>{role.label}</span>
                     </label>
                   ))}
                 </div>
@@ -275,13 +275,9 @@ export default function Signup() {
                     onChange={handleInputChange}
                     className={`form-input ${errors.password ? 'error' : ''}`}
                   />
-                  <button
-                    type="button"
-                    className="toggle-password"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? '👁️' : '👁️‍🗨️'}
-                  </button>
+                  <span type="button" className="toggle-password" onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <span><FaRegEyeSlash /></span> : <span><FaRegEye /></span> }
+                  </span>
                 </div>
                 {errors.password && <span className="error-massage">{errors.password}</span>}
               </div>
