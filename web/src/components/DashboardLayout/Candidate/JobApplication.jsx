@@ -11,19 +11,33 @@ export default function JobApplication(){
     const [loading, setLoading] = useState(true)
     const {notify} = useNotification('')
 
-    async function fetchCandidateVacancies() {
+    async function fetchCandidateSelectedVacancies() {
         try {
             setLoading(true)
-            const resp = await api.get('/candidate/vacancy')
+            const resp = await api.get('/candidate/vacancy/selected')
             if (resp.status === 200) {
-                setSelectedVacancies(resp.data.selected || [])
-                setAppliedVacancies(resp.data.applied || [])
+                setSelectedVacancies(resp.data)
             }
         } catch (error) {
             if (error.response?.status !== 404) {
                 notify('error', error.response?.data?.detail || 'Unable to load your vacancies')
             }
             setSelectedVacancies([])
+        } finally {
+            setLoading(false)
+        }
+    }
+    async function fetchCandidateAppliedVacancies() {
+        try {
+            setLoading(true)
+            const resp = await api.get('/candidate/vacancy/applied')
+            if (resp.status === 200) {
+                setAppliedVacancies(resp.data)
+            }
+        } catch (error) {
+            if (error.response?.status !== 404) {
+                notify('error', error.response?.data?.detail || 'Unable to load your vacancies')
+            }
             setAppliedVacancies([])
         } finally {
             setLoading(false)
@@ -31,7 +45,8 @@ export default function JobApplication(){
     }
 
     useEffect(() => {
-        fetchCandidateVacancies()
+        fetchCandidateSelectedVacancies()
+        fetchCandidateAppliedVacancies()
     }, [])
 
     async function handleApply(jobRoleId) {
@@ -89,7 +104,7 @@ export default function JobApplication(){
             <section className="candidate-job-section">
                 <div className="candidate-job-section-header">
                     <h3><FaBookmark /> Selected Vacancies</h3>
-                    <p>Review these saved roles, apply when ready, or remove them from your list.</p>
+                    <small>Review these saved roles, apply when ready, or remove them from your list.</small>
                 </div>
 
                 <div className="candidate-job-grid">
@@ -120,7 +135,7 @@ export default function JobApplication(){
             <section className="candidate-job-section">
                 <div className="candidate-job-section-header">
                     <h3><FaCheckCircle /> Applied Vacancies</h3>
-                    <p>These applications have already been filed and are now read-only.</p>
+                    <small>These applications have already been filed and are now read-only.</small>
                 </div>
 
                 <div className="candidate-job-grid">

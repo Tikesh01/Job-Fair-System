@@ -18,35 +18,13 @@ export default function VacancyCard({
     showApplyButton,
     removeButtonLabel = 'Remove',
     statusText,
-    height={'max-height' : '250px'}
+    height={'maxHeight' : '250px'}
 }) {
     const [expanded, setExpanded] = useState(false)
     const role = getCookie('role')
     const userId =  getCookie(`company_id`)
-    const [companyObj,setCompanyObj] = useState({})
     const canShowSelectButton = showSelectButton ?? (role === 'candidate')
     const canShowApplyButton = showApplyButton ?? (role === 'candidate')
-
-    useEffect(()=>{
-        async function fetchCompanyById() {
-            if (!vacancy?.company_id) {
-                return
-            }
-
-            const cachedCompany = companyCache.get(vacancy.company_id)
-            if (cachedCompany) {
-                setCompanyObj(cachedCompany)
-                return
-            }
-
-            const resp = await api.get(`/company/${vacancy.company_id}`)
-            if(resp.status == 200){
-                companyCache.set(vacancy.company_id, resp.data)
-                setCompanyObj(resp.data)
-            }
-        }
-        fetchCompanyById()
-    },[vacancy?.company_id])
      
     const handleDelete = () => {
         if (window.confirm('Are you sure you want to delete this vacancy?')) {
@@ -142,10 +120,10 @@ export default function VacancyCard({
                     <strong className="info-icon"><FaCalendarAlt /> </strong>
                     <span className="info-value">{vacancy.alloted_time || '<time>'}, {vacancy.date_of_interview || '<date>'} at {vacancy.alloted_location || '<location>'}</span>
                 </div>
-                {companyObj.name
+                {vacancy.company_name
                     ?<div className='company-name=vacancy-card'>
                         <strong className="info-icon"><FaBuilding /> </strong>
-                        <span className="info-value">{companyObj.name}</span>
+                        <span className="info-value">{vacancy.company_name}</span>
                     </div>
                     :''
                 }

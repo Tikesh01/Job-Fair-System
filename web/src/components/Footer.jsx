@@ -1,14 +1,18 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import './Footer.css';
+import api from '../api/axiosapi';
+import { useNotification } from '../contexts/NotificationContext';
+import {FaStar} from  'react-icons/fa'
 
 export default function Footer() {
 
   const [feedback, setFeedback] = useState({
-    name: '',
-    email: '',
-    message: '',
+    sender_name: '',
+    sender_email: '',
+    msg: '',
     rating: 0
   });
+  const {notify} = useNotification('')
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -25,18 +29,16 @@ export default function Footer() {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle feedback submission here
-    console.log('Feedback submitted:', feedback);
-    // Reset form
-    setFeedback({
-      name: '',
-      email: '',
-      message: '',
-      rating: 0
-    });
-    alert('Thank you for your feedback!');
+  async function handleSubmit(){
+
+    const resp = await api.post('/feedback', feedback)
+    
+    if(resp.status === 200){
+      notify('success', resp.data.msg)
+    }
+    else{
+      notify('error', 'Some Error occured - All fields are Required')
+    }
   };
 
   return (
@@ -46,21 +48,15 @@ export default function Footer() {
           <div className="footer-section">
             <h3>JobFair</h3>
             <p>Connecting talent with opportunities. Your career journey starts here.</p>
-            <div className="social-links">
-              <a href="#" className="social-link">📘</a>
-              <a href="#" className="social-link">🐦</a>
-              <a href="#" className="social-link">💼</a>
-              <a href="#" className="social-link">📧</a>
-            </div>
           </div>
 
           <div className="footer-section">
             <h4>Quick Links</h4>
             <ul type='none'>
-              <li><a href="#about">About Us</a></li>
-              <li><a href="#jobs">Browse Jobs</a></li>
-              <li><a href="#companies">Companies</a></li>
-              <li><a href="#contact">Contact</a></li>
+              <li><a href="/about">About Us</a></li>
+              <li><a href="/job">Browse Jobs</a></li>
+              <li><a href="/company-list">Companies</a></li>
+              <li><a href="/contact">Contact</a></li>
             </ul>
           </div>
 
@@ -80,7 +76,7 @@ export default function Footer() {
               <div className="form-group">
                 <input
                   type="text"
-                  name="name"
+                  name="sender_name"
                   placeholder="Your Name"
                   value={feedback.name}
                   onChange={handleInputChange}
@@ -92,7 +88,7 @@ export default function Footer() {
               <div className="form-group">
                 <input
                   type="email"
-                  name="email"
+                  name="sender_email"
                   placeholder="Your Email"
                   value={feedback.email}
                   onChange={handleInputChange}
@@ -111,7 +107,7 @@ export default function Footer() {
                         className={`star ${feedback.rating >= star ? 'active' : ''}`}
                         onClick={() => handleRating(star)}
                       >
-                        ⭐
+                        <FaStar />
                       </span>
                     ))}
                   </div>
@@ -120,8 +116,8 @@ export default function Footer() {
 
               <div className="form-group">
                 <textarea
-                  name="message"
-                  placeholder="Your feedback..."
+                  name="msg"
+                  placeholder="Your feedback, type rvery Improvement you want...."
                   value={feedback.message}
                   onChange={handleInputChange}
                   className="form-textarea"
@@ -130,10 +126,9 @@ export default function Footer() {
                 ></textarea>
               </div>
                 
-                <button type="submit" className="btn btn-s btn-primary">
+                <button type="button" className="btn btn-s btn-primary" onClick={handleSubmit}>
                   Send Feedback
                 </button>
-
             </form>
           </div>
         </div>

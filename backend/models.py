@@ -23,6 +23,11 @@ class loginRequest(BaseModel):
     email:EmailStr
     password: str
 
+class feedback(BaseModel):
+    sender_name:str
+    sender_email:EmailStr
+    msg:str
+    rating:int
 
 class JobTypeEnum(str, Enum):
     INTERNSHIP = "Internship"

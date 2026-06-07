@@ -1,7 +1,8 @@
 .global-notification-container {
   position: fixed;
-  top: calc(1rem + 70px);
-  right: 1rem;
+  bottom: 10%;
+  left: 50%;
+  transform: translate(-50%, -10%);
   width: calc(100% - 2rem);
   max-width: 360px;
   z-index: 9999;
@@ -12,12 +13,22 @@
 
 .notification {
   border-radius: 6px;
-  padding: 0.75rem 1rem;
-  color: #fff;
+  padding: 0.4rem 0.75rem;
   box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-  font-size: 1.1rem;
+  font-size: 1.05rem;
+  color: aliceblue;
 }
 
-.notification.success { background: #2fa360; }
-.notification.error   { background: #e03f3f; }
-.notification.info    { background: #1f6acc; }
+.notification.success{ 
+  background: rgb(16, 185, 129);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+ }
+.notification.error{
+  background: rgb(239, 68, 68);
+
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+.notification.info{ 
+  background: rgb(59, 131, 246);
+  border: 1px solid rgba(59, 130, 246, 0.3);  
+}

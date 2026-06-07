@@ -6,7 +6,7 @@
     justify-content: space-evenly;
     align-items: center;
     border: var(--border-style);
-    border-radius: 35px;
+    border-radius: 30px;
     padding: 1em 0;
     box-shadow: 0 4px 10px gray;
 }
@@ -50,8 +50,8 @@
 .login-form input[type=radio]{
   display: none;
 }
-.login-footer{
-    margin-top: 1.5em;
+.login-form .signup-text{
+    margin-top: 0.5rem !important;
 }
 @media (max-width: 1024px){
     .login-container{
@@ -107,5 +107,13 @@
 @media (max-width: 390px){
     .login-container{
         padding: 1.2rem;
+    }
+}
+@media (max-width: 340px){
+    .login-container{
+        width: 100%;
+    }
+    .login-container{
+        padding: 0.8rem;
     }
 }

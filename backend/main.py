@@ -11,9 +11,9 @@ from models import (
     loginRequest,
     JobRoleCreate,
     JobRoleUpdate,
-    JobRoleResponse,
     HrCreate,
     HrUpdate,
+    feedback,
 )
 import random
 import string
@@ -132,10 +132,6 @@ def require_roles(*allowed_roles):
                 token = request.cookies.get("token")
                 payload = token_decode(token)
                 user_role = payload.get("role")
-                # email = payload.get('email')
-                # user = check_user_exist(user_role,email)
-                # if not user:
-                #     raise HTTPException(status_code=403, detail="You are not Authorized")
                 
                 if user_role not in allowed_roles:
                     raise HTTPException(status_code=403, detail="You are not Authorized")
@@ -145,6 +141,27 @@ def require_roles(*allowed_roles):
             return func(request, *args, **kwargs)
         return wrapper
     return decorator
+
+def check_verification(func):
+    @wraps(func)
+    def wrapper(request:Request, *args, **kwargs):
+        try:
+            payload = request.state.user
+            id = payload.get('sub')
+            role = payload.get('role')
+
+            rs = db.query(f'SELECT is_verified FROM {role} WHERE {role}_id = %s', params=(id, ))
+
+            is_verified = bool(rs[0]['is_verified'])
+
+            if not is_verified:
+                raise HTTPException(status_code=401,detail="You are not verified")
+
+        except Exception as e:
+            raise HTTPException(status_code=401,detail="You are not verified")
+        
+        return func(request, *args, **kwargs)
+    return wrapper
 
 @app.post("/login")
 def login(loginObj:loginRequest):
@@ -238,30 +255,33 @@ def isDuplicateUser(email:str):
 
 @app.post("/register")
 def register_user(request: userRegister):
-    email = request.email
-    otp = request.otp
-    role = validate_role(request.role) 
-    password = request.password
-    cnfm_password = request.cnfm_password
+    try:
+        email = request.email
+        otp = request.otp
+        role = validate_role(request.role) 
+        password = request.password
+        cnfm_password = request.cnfm_password
 
-    if len(password) > 30:
-        raise HTTPException(status_code=400, detail="Password exceeds maximum length")
+        if len(password) > 30:
+            raise HTTPException(status_code=400, detail="Password exceeds maximum length")
 
-    if not role or not validate_email(email) or not verify_email_otp(email, otp):
-        raise HTTPException(status_code=400, detail="Invalid email, role, or OTP")
-    
-    if password != cnfm_password:
-        raise HTTPException(status_code=400, detail="Passwords do not match")
-    
-    if isDuplicateUser(email):
-        raise HTTPException(status_code=409, detail="Email already registered")
+        if not role or not validate_email(email) or not verify_email_otp(email, otp):
+            raise HTTPException(status_code=400, detail="Invalid email, role, or OTP")
+        
+        if password != cnfm_password:
+            raise HTTPException(status_code=400, detail="Passwords do not match")
+        
+        if isDuplicateUser(email):
+            raise HTTPException(status_code=409, detail="Email already registered")
 
-    if not isStrongPass(password):
-        raise HTTPException(status_code=400, detail="Password must be 8+ chars with uppercase, lowercase, digit, and special character")
-    
-    q = "INSERT INTO " + role + "(email, password) VALUES(%s, %s)"
-    db.query(Q=q, params=(email, password), commit=True)
-    return {"message": "Registration successful"}
+        if not isStrongPass(password):
+            raise HTTPException(status_code=400, detail="Password must be 8+ chars with uppercase, lowercase, digit, and special character")
+        
+        q = "INSERT INTO " + role + "(email, password) VALUES(%s, %s)"
+        db.query(Q=q, params=(email, password), commit=True)
+        return {"message": "Registration successful"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Internal Server error")
 
 @app.get("/profile")
 @require_roles("candidate","university","company")
@@ -270,7 +290,7 @@ def get_user_details(request:Request):
         payload = request.state.user
         role = payload.get('role')
         if not validate_role(role):
-            raise HTTPException(status_code=400, detail="Invalid Role")
+            raise HTTPException(status_code=401, detail="Invalid Role")
         
         user_id = payload.get('sub')
 
@@ -281,15 +301,39 @@ def get_user_details(request:Request):
         userData = user[0]
         userData['role'] = role
 
+        if role=='candidate':
+            course_id = int(userData.get('course_id') or 0)
+            userData['courseObj'] = get_candidate_course_detail(course_id) if course_id else {}
+            branch_id = int(userData.get('branch_id') or 0)
+            userData['branchObj'] = get_candidate_branch_detail(branch_id) if branch_id else {}
+            userData['job_application_count'] = db.query(
+                    'SELECT COUNT(*) AS c FROM job_application ja WHERE ja.candidate_id = %s AND ja.is_applied = 1',
+                    params=(user_id, )
+                )[0]['c']
+
+            joined_ur_name = get_candidate_joined_university(user_id)
+            if joined_ur_name:
+                userData['joined_ur_name'] = joined_ur_name
+            
+
         if role=='company':
-            userData['company_type_obj'] =  company_type_by_id(userData['industry_type_id'])
+            userData['job_application_count'] = db.query(
+                'SELECT COUNT(*) AS c FROM job_application ja LEFT JOIN job_role jr ON ja.job_role_id = jr.job_role_id WHERE jr.company_id = %s',
+                params=(user_id, ) 
+            )[0]['c']
+
+        if role=='university':
+            userData['student_count'] = db.query(
+                'SELECT COUNT(*) AS c FROM university_candidate uc WHERE uc.university_id = %s',
+                params=(user_id, )
+            )[0]['c']
 
         return userData
        
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=e )
+        raise HTTPException(status_code=500, detail="Error occured while finding profile")
 
 @app.put("/profile")
 @require_roles("candidate","university","company")
@@ -298,13 +342,18 @@ def update_profile(request:Request, data:dict):
         raise HTTPException(status_code=400, detail="No Changes detected")
     if 'email' in data:
         raise HTTPException(status_code=400, detail="Email cannot be changed!")
-    
+    if 'is_verified' in data: 
+        raise HTTPException(status_code=401, detail='You Are not Authorized')
     try:
         payload = request.state.user
         id = payload.get('sub')
         role = payload.get('role')
 
         if role == 'candidate':
+            if 'ur_joining_token' in data:
+                ur_name = join_ur_group(id, data['ur_joining_token'])
+                data.pop('ur_joining_token')
+                data['university_name'] = ur_name
             if 'is_eligible' in data:
                 raise HTTPException(status_code=400, detail="Cannot be chnaged!")
             if 'course_id' in data:
@@ -318,6 +367,11 @@ def update_profile(request:Request, data:dict):
                         raise HTTPException(status_code=400, detail="Wrong Branch Selection")
                 elif 'branch_id' not in data:
                     data['branch_id'] = branch_obj_list[0]['branch_id']
+        
+        if role == 'university':
+            if 'student_joning_token' in data:
+                raise HTTPException(status_code=401, detail='You Are not Authorized')
+
 
         set_clause = ", ".join([f"{k} = %s" for k in data.keys()])
         q = f"""
@@ -336,20 +390,23 @@ def update_profile(request:Request, data:dict):
 
 @app.get("/vacancy/posted", response_model=list)
 def get_posted_vancancies(request:Request):
-    vacancy_list  = db.query('SELECT * FROM job_role jr WHERE jr.is_posted = 1')
+    vacancy_list  = db.query("""
+        SELECT jr.*, com.name as company_name 
+        FROM job_role jr JOIN company com 
+        ON jr.company_id = com.company_id 
+        WHERE jr.is_posted = 1"""
+    )
     if len(vacancy_list) == 0:
         raise HTTPException(status_code=404, detail='No Vacancies Found')
     return vacancy_list 
 
 @app.get("/companies", response_model=list)
-def get_verified_companies():
+def get_verified_company_list():
     company_list = db.query(
         """
         SELECT
-            c.avatar,c.name, c.is_verified, c.is_active, c.email, c.contact,c.city, c.state,c.about,c.address, c.job_application_count,
-            ct.type AS industry_type_name
+            c.avatar,c.name, c.is_verified, c.is_active, c.email, c.contact,c.city, c.state,c.about,c.address, c.job_application_count, c.company_type
         FROM company c
-        LEFT JOIN company_type ct ON ct.id = c.industry_type_id
         WHERE c.is_verified = 1
         ORDER BY c.is_active DESC, c.job_application_count DESC, c.created_at DESC
         """
@@ -359,18 +416,80 @@ def get_verified_companies():
         raise HTTPException(status_code=404, detail="No verified companies found")
 
     return company_list
+
+@app.post("/feedback")
+def add_feedback(fbk:feedback):
+    try:
+        name = fbk.sender_name
+        email = fbk.sender_email
+        msg = fbk.msg
+        rating = fbk.rating
+
+        db.query(
+            'INSERT INTO feedback(sender_name, sender_email, msg, rating) VALUES (%s, %s, %s, %s )', 
+            params=(name, email, msg, rating, ), 
+            commit=True
+        )
+
+        return {'msg': 'Feedback submitted Successfully'}
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Can't Submit Feedback")
+
 ######################################## == Candidate == ################################################
+def get_candidate_joined_university(candidate_id):
+    try:
+        q = """
+            SELECT u.name FROM university_candidate uc 
+            join university u on uc.university_id = u.university_id
+            WHERE uc.candidate_id = %s
+            """
+        joined_university = db.query(q, params=(candidate_id, ))
+        if len(joined_university) > 0:
+            return joined_university[0]['name']
+        else:
+            return None
+    except Exception as e:
+        return None
+    
+def join_ur_group(candidate_id, token):
+    try:
+        ur = db.query('SELECT u.university_id AS id, u.name FROM university u WHERE u.student_joining_token = %s', params=(token, ))[0]
+        q = 'INSERT INTO university_candidate(candidate_id, university_id) VALUES(%s, %s)'
+
+        db.query(q, params=(candidate_id, ur['id'], ), commit=True)
+
+        return ur['name']
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Unable to join University")
+
+@app.delete("/candidate/joined-university")
+@require_roles("candidate")
+@check_verification
+def unjoin_univesity(request:Request):
+    try:
+        candidate_id = request.state.user.get('sub')
+        q = """
+            DELETE FROM university_candidate uc
+            WHERE uc.candidate_id = %s
+            """
+        db.query(q, params=(candidate_id, ), commit=True)
+    except Exception as e:
+        return None
+    
 @app.get("/courses")
 @require_roles("candidate")
 def get_all_courses_list(request:Request):
     try:
         result = db.getTable('course')
+        for course in result:
+            course['branches'] = course_branches_by_course_id(course['course_id'])
         if len(result) == 0:
             raise HTTPException(status_code=404, detail='No Courses Found')
         return result
     except Exception as e:
         raise HTTPException(status_code=400,detail="Error occured")
-
+    
 def course_branches_by_course_id(course_id):
     q = """
         SELECT b.branch_id,b.branch_title 
@@ -383,48 +502,24 @@ def course_branches_by_course_id(course_id):
 
     return result
 
-def course_by_branch_id_and_course_id(branch_id,course_id):
-    q = """
-        SELECT c.course_id,c.course_title 
-        FROM course c JOIN course_branch cb 
-        ON c.course_id = cb.course_id
-        WHERE cb.branch_id=%s AND c.course_id=%s
-    """
-    result = db.query(q,params=(branch_id,course_id))
-
-    return result
-    
-@app.get("/course/{course_id}")
-@require_roles("candidate")
-def get_candidate_course_detail(request:Request, course_id:int):
+def get_candidate_course_detail(course_id:int):
     try:
         candidate_course = db.query("SELECT * FROM course WHERE course_id=%s",params=(course_id,))
         if len(candidate_course) == 0:
-            raise HTTPException(status_code=200,detail="No course Found")
+            return {}
         courseObj = dict(candidate_course[0])
-
-        branches_obj_list = course_branches_by_course_id(course_id)
-        if (branches_obj_list) == 0:
-            branches_obj_list = [{
-                                    'branch_id':33,
-                                    'branch_title': 'other'
-                                }]
-            
-        courseObj['branches'] = branches_obj_list
 
         return courseObj
     
     except Exception as e:
         raise HTTPException(status_code=400, detail="Error Occured")
-
-@app.get("/branch/{branch_id}")
-@require_roles("candidate")
-def get_candidate_branch_detail(request:Request, branch_id:int):
+    
+def get_candidate_branch_detail(branch_id:int):
     try:
         result = db.query('SELECT * FROM branch WHERE branch_id=%s',params=(branch_id, ))
 
-        if len(result) ==0:
-            raise HTTPException(status_code=400,detail="No Branch found")
+        if len(result) == 0:
+            return {}
         return result[0]
     except Exception as e:
         raise HTTPException(status_code=400, detail="Error Occured")
@@ -442,7 +537,7 @@ def get_candidate_links(request:Request):
     except Exception as e:
         raise HTTPException(status_code=400, detail='Cant Find links error')
     
-@app.put("/candidate/link/")
+@app.put("/candidate/link")
 @require_roles('candidate')
 def update_candidate_link(request:Request, urlObj:dict):
     print(urlObj)
@@ -475,7 +570,7 @@ def is_safe_links_count(candidate_id):
     print(result)
     return bool(len(result) < 3)
     
-@app.post("/candidate/link/")
+@app.post("/candidate/link")
 @require_roles('candidate')
 def create_candidate_link(request:Request, urlObj:dict):
     try:
@@ -492,9 +587,15 @@ def create_candidate_link(request:Request, urlObj:dict):
 
 def vacancy_check(job_role_id, candidate_id, apply=False):
     if apply:
-        closed = db.query('SELECT is_closed FROM job_role WHERE job_role_id = %s',params=(job_role_id, ))[0]
-        if closed['is_closed'] == 1:
+        vacancy = db.query('SELECT is_closed, max_application_count AS max_count FROM job_role WHERE job_role_id = %s',params=(job_role_id, ))[0]
+        if vacancy['is_closed'] == 1:
             raise HTTPException(status_code=400, detail='Closed Vacancies Cannot be Applied')
+        
+        applied_count = db.query('SELECT COUNT(*) AS c  FROM job_application WHERE job_role_id = %s AND is_applied = true',params=(job_role_id, ) )[0]['c']
+
+        if applied_count >= vacancy['max_count']:
+            raise HTTPException(status_code=400, detail="Max count reached for the role application")
+        
     applied =  db.query('SELECT * FROM job_application ja WHERE ja.job_role_id = %s AND ja.candidate_id = %s AND is_applied = 1',params=(job_role_id, candidate_id, ))
     if len(applied) > 0:
         raise HTTPException(status_code=400, detail='Vacancy already Applied')
@@ -535,17 +636,19 @@ def select_vacancy(request:Request, job_role_id:int):
 
 @app.post('/candidate/vacancy/{job_role_id}/apply')
 @require_roles('candidate')
+@check_verification
 def apply_vacancy(request:Request, job_role_id:int):
     payload = request.state.user
     candidate_id = payload.get('sub')
     if vacancy_check(job_role_id, candidate_id, apply=True):
         db.query('INSERT INTO job_application(is_applied, candidate_id, job_role_id) VALUES (1, %s, %s)', params=(candidate_id, job_role_id), commit=True)
+        db.query('UPDATE job_role SET application_count = application_count + 1 WHERE job_role_id = %s',params=(job_role_id, ),commit=True)
         db.query('UPDATE candidate SET job_application_count = job_application_count + 1 WHERE candidate_id = %s',params=(candidate_id, ),commit=True)
         return {'msg':'Vacancy Application Success'}
 
-@app.get('/candidate/vacancy')
+@app.get('/candidate/vacancy/selected')
 @require_roles('candidate')
-def get_candidate_vacancies(request:Request):
+def get_candidate_selected_vacancies(request:Request):
     payload = request.state.user
     candidate_id = payload.get('sub')
 
@@ -554,19 +657,33 @@ def get_candidate_vacancies(request:Request):
         SELECT jr.*, ja.is_applied, ja.application_id
         FROM job_application ja
         JOIN job_role jr ON jr.job_role_id = ja.job_role_id
-        WHERE ja.candidate_id = %s
+        WHERE ja.candidate_id = %s AND ja.is_applied = 0
         ORDER BY ja.is_applied DESC, jr.is_closed ASC, jr.job_role_id DESC
         ''',
         params=(candidate_id, )
     )
 
-    selected = [vacancy for vacancy in vacancy_list if not vacancy.get('is_applied')]
-    applied = [vacancy for vacancy in vacancy_list if vacancy.get('is_applied')]
+    return  vacancy_list
 
-    return {
-        'selected': selected,
-        'applied': applied
-    }
+@app.get('/candidate/vacancy/applied')
+@require_roles('candidate')
+@check_verification
+def get_candidate_applied_vacancies(request:Request):
+    payload = request.state.user
+    candidate_id = payload.get('sub')
+
+    vacancy_list = db.query(
+        '''
+        SELECT jr.*, ja.is_applied, ja.application_id
+        FROM job_application ja
+        JOIN job_role jr ON jr.job_role_id = ja.job_role_id
+        WHERE ja.candidate_id = %s AND ja.is_applied = 1
+        ORDER BY ja.is_applied DESC, jr.is_closed ASC, jr.job_role_id DESC
+        ''',
+        params=(candidate_id, )
+    )
+
+    return  vacancy_list
 
 @app.delete('/candidate/vacancy/{job_role_id}')
 @require_roles('candidate')    
@@ -592,15 +709,6 @@ def company_type_by_id(id):
         return result[0]
     else:
         return {}
-
-@app.get("/company/types")
-@require_roles("company")
-def get_all_company_types(request:Request):
-    try:
-        rs = db.getTable('company_type')
-        return rs
-    except Exception as e:
-        return []
     
 def validate_hr_payload(hr_obj):
     if hr_obj.contact is not None:
@@ -633,6 +741,7 @@ def get_hr_for_company_or_404(hr_id, company_id):
 
 @app.get("/company/hr", response_model=list)
 @require_roles("company")
+@check_verification
 def get_company_hrs(request: Request):
     try:
         payload = request.state.user
@@ -647,6 +756,7 @@ def get_company_hrs(request: Request):
 
 @app.post("/company/hr")
 @require_roles("company")
+@check_verification
 def create_company_hr(request: Request, hr_obj: HrCreate):
     try:
         payload = request.state.user
@@ -695,6 +805,7 @@ def create_company_hr(request: Request, hr_obj: HrCreate):
 
 @app.put("/company/hr/{hr_id}")
 @require_roles("company")
+@check_verification
 def update_company_hr(request: Request, hr_id: int, hr_obj: HrUpdate):
     try:
         payload = request.state.user
@@ -744,6 +855,7 @@ def update_company_hr(request: Request, hr_id: int, hr_obj: HrUpdate):
 
 @app.delete("/company/hr/{hr_id}")
 @require_roles("company")
+@check_verification
 def delete_company_hr(request: Request, hr_id: int):
     try:
         payload = request.state.user
@@ -762,6 +874,7 @@ def delete_company_hr(request: Request, hr_id: int):
     
 @app.get('/company/vacancy', response_model=list)
 @require_roles('company')
+@check_verification
 def get_vacancys_of_company(request:Request):
     try:
         payload = request.state.user
@@ -780,6 +893,7 @@ def get_vacancys_of_company(request:Request):
 
 @app.post('/company/vacancy')
 @require_roles('company')
+@check_verification
 def create_vacancy(request:Request, vacancyObj:JobRoleCreate):
     try:
         payload = request.state.user
@@ -885,6 +999,7 @@ def vacancy_vadidate(job_role_id, company_id, is_closed=None):
 
 @app.put('/company/vacancy/{job_role_id}')
 @require_roles('company')
+@check_verification
 def update_vacancy(request: Request, job_role_id: int, vacancyObj: JobRoleUpdate):
     try:
         payload = request.state.user
@@ -983,6 +1098,7 @@ def update_vacancy(request: Request, job_role_id: int, vacancyObj: JobRoleUpdate
 
 @app.delete('/company/vacancy/{job_role_id}')
 @require_roles('company')
+@check_verification
 def delete_vacancy(request: Request, job_role_id: int):
     try:
         payload = request.state.user
@@ -1007,6 +1123,7 @@ def delete_vacancy(request: Request, job_role_id: int):
     
 @app.get('/company/job/applications')
 @require_roles('company')
+@check_verification
 def get_company_job_applications(request:Request):
     try:
         payload = request.state.user
@@ -1043,18 +1160,99 @@ def get_company_job_applications(request:Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching company applications: {str(e)}")
 
-@app.get('/company/{company_id}')
-def get_company_detail_by_id(company_id:int):
-    company_list = db.query("""
-        SELECT c.name
-        FROM company c WHERE company_id = %s
-        """,
-        params=(company_id, )
-        )
-    if len(company_list) == 0:
-        raise HTTPException(status_code=404, detail=f'Company with company id {company_id} not found!')
+
+########################################### == University ############################
+
+def create_random_token(length=16):
+    all_chars = string.ascii_uppercase + string.digits+string.ascii_lowercase
+    token = ''.join(random.choice(all_chars) for _ in range(length))
+    return token
+
+@app.get('/university/student-token')
+@require_roles('university')
+@check_verification
+def create_token(request: Request):
+    payload = request.state.user
+    university_id = payload.get('sub')
+
+    is_verified = db.query(
+        'SELECT is_verified FROM university WHERE university_id = %s',
+        params=(university_id, )
+    )[0]['is_verified']
     
-    return company_list[0]
+    if not bool(is_verified):
+        raise HTTPException(status_code=401, detail='Not verified')
+    token = create_random_token()
+    db.query(
+        'UPDATE university SET student_joining_token = %s WHERE university_id = %s',
+        params=(token, university_id, ),
+        commit=True
+    )
+    
+    return {"msg": 'Token updated', "student_joining_token": token}
+
+@app.get('/university/candidates')
+@require_roles('university')
+@check_verification
+def get_univesity_candidates(request:Request):
+    payload = request.state.user
+    university_id = payload.get('sub')
+
+    q = """
+        SELECT
+            c.candidate_id,
+            c.name,
+            c.date_of_birth,
+            c.email,
+            c.contact,
+            c.is_active,
+            c.city,
+            c.state,
+            crs.course_title,
+            br.branch_title
+        FROM university_candidate uc 
+        join candidate c ON uc.candidate_id = c.candidate_id 
+        join course crs ON c.course_id = crs.course_id
+        join branch br ON br.branch_id = c.branch_id
+        WHERE uc.university_id = %s;
+        """
+    university_candidate = db.query(q, params=(university_id, ))
+    
+    if not university_candidate:
+        return []
+
+    return university_candidate
+
+@app.delete('/university/candidates/{candidate_id}')
+@require_roles('university')
+@check_verification
+def delete_univesity_candidates(request:Request, candidate_id:int):
+    payload = request.state.user
+    university_id = payload.get('sub')
+
+    membership = db.query(
+        """
+        SELECT candidate_id
+        FROM university_candidate
+        WHERE university_id = %s AND candidate_id = %s
+        """,
+        params=(university_id, candidate_id)
+    )
+
+    if not membership:
+        raise HTTPException(status_code=404, detail="Candidate not found in your university group")
+
+    db.query(
+        """
+        DELETE FROM university_candidate
+        WHERE university_id = %s AND candidate_id = %s
+        """,
+        params=(university_id, candidate_id),
+        commit=True
+    )
+
+    return {"message": "Candidate removed successfully", "candidate_id": candidate_id}
 
 if __name__ == "__main__":
     uvicorn.run(app="main:app",host=host,port=port, reload=True)
+ 

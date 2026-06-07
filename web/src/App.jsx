@@ -22,6 +22,7 @@ import CompanyList from './components/NavMenu/CompanyList';
 import JobApplicationByCandidate from './components/DashboardLayout/Company/JobApplication';
 import Vacancy from './components/DashboardLayout/Company/Vacancy'
 import Hr from './components/DashboardLayout/Company/Hr'
+import Students from './components/DashboardLayout/University/Students';
 
 function App() {
     const [token, setToken] = useState(getCookie('token'))
@@ -68,6 +69,10 @@ function App() {
                                     <Route path='/company/job/applications' element={<JobApplicationByCandidate />} />
                                     <Route path='/company/vacancy' element={<Vacancy />} />
                                     <Route path='/company/hr' element={<Hr />} />
+                                </Route>
+                                <Route path='/university' element={<Dashboard />}>
+                                    <Route index element={<Profile />} />
+                                    <Route path='/university/students' element={<Students />} />
                                 </Route>
                             </>
                         :

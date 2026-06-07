@@ -12,8 +12,19 @@ export default function CompanyProfile({companyObj}){
     const [editable,setEditable] = useState(false)
     const [companyTypeList, setCompanyTypeList] = useState([])
     const [updatedInputs, setUpdatedInputs] = useState({})
+    const [IndStates, setIndStates] = useState([])
 
 
+    const comp_types = ['IT/Tech','Banking','Consulting','Consumer Goods','Construction','Education','Energy','Engineering','Entertainment','Finance',
+        'Food&Beverage','Government','Healthcare','Hospitality','Insurance','Logistics','Manufacturing','Media','Non-profit','RealEstate','Retail','Startup','Telecom','Transportation','Other']
+    const indian_states = [
+        "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
+        "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
+        "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur",
+        "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab",
+        "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura",
+        "Uttar Pradesh", "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu","Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry"
+    ]
     useEffect(()=>{
         function handleEditing(){
             const profileInput = document.querySelectorAll(".profile-input")
@@ -24,6 +35,8 @@ export default function CompanyProfile({companyObj}){
             console.log('Editable = ', editable)
         }
         handleEditing();
+        setIndStates(indian_states)
+        setCompanyTypeList(comp_types)
     },[editable])
 
     useEffect(()=>{
@@ -78,20 +91,6 @@ export default function CompanyProfile({companyObj}){
             notify('error', error.response?.data?.detail);
         }
     };
-    // caliing state
-    useEffect(()=>{
-        async function fetchCompanyType(){
-            const resp = await api.get('/company/types')
-            if(resp.status === 200){
-                setCompanyTypeList(resp.data) 
-            }
-            else{
-                console.log(resp.data.detail);
-                
-            }
-        }
-        fetchCompanyType()
-    },[])
     return(
         <>
             <div className="profile-container">
@@ -199,36 +198,36 @@ export default function CompanyProfile({companyObj}){
                         <div className="partition-box">
                             <h3>Account detail</h3>
                             <div className="form-group">
-                                <label htmlFor="email"><FaEnvelope /> Email Address</label>
+                                <label htmlFor="email"><FaEnvelope /> Email Address <small>(readonly)</small></label>
                                 <input id="email" type='email' readOnly disabled value={company.email} placeholder='Your Email' />
                                 <span className="error-massage">{errors.email || ""}</span>
                             </div>
                             <div className="form-group">
-                                <label htmlFor="email"><FaCodepen /> GSTIN</label>
-                                <input id="GSTN" type='text' readOnly disabled value={company.company_gstin} placeholder='Company GSTIN number' />
+                                <label htmlFor="email"><FaCodepen /> GSTIN <small>(readonly)</small></label>
+                                <input id="GSTN" type='text' readOnly disabled value={company.company_gstin || ''} placeholder='Company GSTIN number' />
                                 <span className="error-massage">{}</span>
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="password"><FaLock /> Password <small>(readonly)</small></label>
+                                <input id="password" type="password" readOnly className='profile-input' value={company.password} />
+                                <span className="error-massage"></span>
                             </div>
                             <div className="form-group">
                                 <label htmlFor="contact"><FaPhone /> Mobile Number</label>
                                 <input onChange={handleProfileUpdate} id="contact" type='text' name='contact' className='profile-input' value={company.contact?company.contact:""} placeholder='Add Mobile number'  />
                                 <span className="error-massage"></span>
                             </div>
-                            <div className="form-group">
-                                <label htmlFor="password"><FaLock /> Password</label>
-                                <input id="password" type="password" readOnly className='profile-input' value={company.password} />
-                                <span className="error-massage"></span>
-                            </div>
                         </div>
                          <div className="partition-box">
                             <h3>Industry Type</h3>
                             <div className="form-group">
-                                <select onChange={handleProfileUpdate} name="industry_type_id" className='profile-input' id="" value={company.industry_type_id || ''}>
+                                <select onChange={handleProfileUpdate} name="company_type" className='profile-input' value={company.company_type|| ''}>
                                     {
                                         !editable
-                                            ?<option value={company.company_type_obj.id || "" }>{company.company_type_obj.type || "Select Company Type"}</option>
+                                            ?<option value={company.company_type || "" }>{company.company_type || "Select Company Type"}</option>
                                             
-                                            :companyTypeList.map(compTypeObj=>(
-                                                <option value={compTypeObj.id}>{compTypeObj.type}</option>
+                                            :companyTypeList.map(type=>(
+                                                <option value={type}>{type}</option>
                                             ))
                                     }
                                 </select>
@@ -266,7 +265,14 @@ export default function CompanyProfile({companyObj}){
                                 <select onChange={handleProfileUpdate} id="state" name='state' className='profile-input' value={company.state || ''}  >
                                     {!editable 
                                         ? <option value={company.state}>{company.state}</option>
-                                        : ''
+                                        : <>
+                                            <option value="" disabled>{company.state ? company.state : 'Select a state'}</option>
+                                            {IndStates.map((stateItem, index) => (
+                                                <option key={index + 1} value={stateItem} style={{ color: 'black' }}>
+                                                    {index + 1}. {stateItem}
+                                                </option>
+                                            ))}
+                                        </>
                                     }
                                         
                                 </select>

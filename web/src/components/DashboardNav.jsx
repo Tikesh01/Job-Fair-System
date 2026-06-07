@@ -1,6 +1,7 @@
 import './DashboardNav.css'
 import {getCookie} from '../utils/cookies';
 import { Link } from 'react-router-dom';
+import { FaUser, FaUsers } from 'react-icons/fa';
 
 const candidateDashMenu = [
     {title:'Manage Applications',to:'/candidate/job/applications', text:'Applcation', icon:<i className='fas fa-briefcase'></i>},
@@ -17,14 +18,9 @@ const companyDashMenu = [
     {title:'Profile',to:'/company', text:'Profile', icon:<i className='fas fa-user'></i>}
 ];
 
-const UniversityDashMenu = [
-    {title:'Manage Candidates',to:'/dashboard', text:'Candidates', icon:<i className='fas fa-users'></i>},
-    {title:'Profile',to:'/dashboard', text:'Profile', icon:<i className='fas fa-user'></i>}
-];
-
-const publicDashMenu = [
-    {title:'All Listed Job Roles',to:'/job', text:'Jobs', icon:<i className='fas fa-list'></i>},
-    {title:'Listed Companies',to:'/company', text:'Companies', icon:<i className='fas fa-building'></i>},
+const universityDashMenu = [
+    {title:'Manage Candidates',to:'/university/students', text:'Candidates', icon:<FaUsers />},
+    {title:'Profile',to:'/university', text:'Profile', icon:<FaUser />}
 ];
 
 export default function DashboardNav(){
@@ -45,7 +41,7 @@ export default function DashboardNav(){
                                 className={link.to === currentPath ?'dashboardlink active':'dashboardlink'} to={link.to}
                             >
                                 <span className='db-nav-icon'>{link.icon}</span>
-                                <span className="db-nav-text"> {link.text}</span>
+                                <span className="db-nav-text"> </span>
                             </Link>
                         ))
                     }
@@ -61,10 +57,10 @@ export default function DashboardNav(){
                         ))
                     }
                 </div>
-            :
+            :role==='university'?
                 <div className="smaller-nav-menu">
                     {
-                        UniversityDashMenu.map(link=>(
+                        universityDashMenu.map(link=>(
                             <Link key={link.to} title={link.title} className={link.to === currentPath ?'dashboardlink active':'dashboardlink'} to={link.to}>
                                 <span className='db-nav-icon'>{link.icon}</span>
                                 <span className="db-nav-text"> {link.text}</span>
@@ -72,17 +68,9 @@ export default function DashboardNav(){
                         ))
                     }
                 </div>
+            :null
         :
-            <div className="smaller-nav-menu">
-                {
-                    publicDashMenu.map(link=>(
-                        <Link key={link.to} title={link.title} className={link.to === currentPath ?'dashboardlink active':'dashboardlink'} to={link.to}>
-                            <span className='db-nav-icon'>{link.icon}</span>
-                            <span className="db-nav-text"> {link.text}</span>
-                        </Link>
-                    ))
-                }
-            </div>
+            null
         }
         </>
     )

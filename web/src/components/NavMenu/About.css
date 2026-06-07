@@ -7,54 +7,60 @@
 .about-header {
   text-align: center;
   margin-bottom: 3rem;
+  padding: 1.25rem 1.5rem;
 }
 
 .about-header h1 {
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, #ffc107, #ff9500);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .about-header p {
   font-size: 1.2rem;
-  color: #c0c0c0;
+  color: #1e293b;
+  opacity: 0.8;
 }
 
 .about-section {
   margin-bottom: 3rem;
-  padding: 2rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 15px;
-  border: 1px solid rgba(255, 193, 7, 0.2);
+  padding: 1rem 4rem;
+  background: var(--bg-container);
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
 }
-
+.about-section .mission{
+  width: 100%;
+  
+}
+.about-section .about-img{
+  width: 100%;
+  img{
+    width: 80%;
+    float: right;
+  }
+}
 .about-section h2 {
   font-size: 1.8rem;
   margin-bottom: 1rem;
-  color: #ffc107;
 }
 
 .about-section p {
   font-size: 1rem;
   line-height: 1.8;
-  color: #e0e0e0;
+  color: #1e293b;
+  opacity: 0.85;
 }
 
 .about-values {
   margin-bottom: 3rem;
   padding: 2rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 15px;
-  border: 1px solid rgba(255, 193, 7, 0.2);
+  border-radius: 22px;
 }
 
 .about-values h2 {
   font-size: 1.8rem;
   margin-bottom: 2rem;
-  color: #ffc107;
   text-align: center;
 }
 
@@ -66,33 +72,34 @@
 
 .value-card {
   padding: 2rem;
-  background: rgba(255, 193, 7, 0.1);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 193, 7, 0.3);
+  background: #fff;
+  border-radius: 18px;
   text-align: center;
   transition: all 0.3s ease;
 }
 
 .value-card:hover {
   transform: translateY(-5px);
-  border-color: #ffc107;
-  box-shadow: 0 8px 20px rgba(255, 193, 7, 0.2);
+  border-color: var(--highlight-color);
+  box-shadow: 0 8px 20px rgba(100, 108, 255, 0.12);
 }
 
 .value-icon {
   font-size: 3rem;
-  color: #ffc107;
+  color: var(--main-color);
   margin-bottom: 1rem;
 }
 
 .value-card h3 {
   font-size: 1.3rem;
   margin-bottom: 0.75rem;
+  color: #1e293b;
 }
 
 .value-card p {
   font-size: 0.95rem;
-  color: #c0c0c0;
+  color: #1e293b;
+  opacity: 0.8;
   line-height: 1.6;
 }
 
@@ -105,16 +112,17 @@
 
 .benefits-list li {
   padding: 1.5rem;
-  background: rgba(255, 193, 7, 0.1);
-  border-radius: 8px;
-  border-left: 4px solid #ffc107;
+  background: #fff;
+  border-radius: 18px;
+  border: var(--border-style);
+  border-left: 4px solid var(--main-color);
   font-size: 1.05rem;
-  color: #e0e0e0;
+  color: #1e293b;
   transition: all 0.3s ease;
 }
 
 .benefits-list li:hover {
-  background: rgba(255, 193, 7, 0.2);
+  background: #fff8fb;
   transform: translateX(5px);
 }
 
@@ -139,5 +147,17 @@
 
   .value-card {
     padding: 1.5rem;
+  }
+}
+@media (max-width: 480px) {
+  .about-section{
+    flex-direction: column-reverse;
+    gap: 2rem;
+  }
+  .about-section .about-img{
+    img{
+      width: 90%;
+      float: none;
+    }
   }
 }

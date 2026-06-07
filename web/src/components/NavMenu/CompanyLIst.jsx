@@ -87,7 +87,7 @@ export default  function CompanyList() {
                         <p>
                             {loading
                                 ? 'Please wait while we fetch the verified company list.'
-                                : 'Try changing the search text or add verified companies to the database.'}
+                                : 'Try changing the search text'}
                         </p>
                     </div>
                 )}

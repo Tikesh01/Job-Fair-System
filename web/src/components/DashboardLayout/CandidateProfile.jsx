@@ -1,7 +1,7 @@
 import { useNotification } from "../../contexts/NotificationContext"
 import { useState, useEffect } from "react"
 import profilePic from '../../assets/mobile-login-animate.svg'
-import { FaBriefcase, FaCheckCircle, FaCheckDouble, FaInfoCircle, FaTimesCircle, FaEnvelope, FaPhone, FaLock, FaGraduationCap, FaBook, FaUniversity, FaMapMarkerAlt, FaMoneyBillWave, FaFileAlt, FaMapMarked, FaSearchLocation, FaCalendarAlt, FaTrashAlt, FaPlusCircle, FaCalendar, FaUserAlt, FaHotel, FaUserEdit, FaRegSave, FaSignOutAlt, FaUserTie, FaCity } from "react-icons/fa";
+import { FaBriefcase, FaCheckCircle, FaCheckDouble, FaInfoCircle, FaTimesCircle, FaEnvelope, FaPhone, FaLock, FaGraduationCap, FaBook, FaUniversity, FaMapMarkerAlt, FaMoneyBillWave, FaFileAlt, FaMapMarked, FaSearchLocation, FaCalendarAlt, FaTrashAlt, FaPlusCircle, FaCalendar, FaUserAlt, FaHotel, FaUserEdit, FaRegSave, FaSignOutAlt, FaUserTie, FaCity, FaHashtag, FaRecycle, FaRedoAlt, FaUserGraduate } from "react-icons/fa";
 import api from "../../api/axiosapi";
 import { useNavigate } from "react-router-dom";
 
@@ -52,7 +52,7 @@ function Links({candidate_id,editable}){
         }
         try {
             const newUrl = { link_url: '' }
-            const resp = await api.post(`candidate/link/`, newUrl)
+            const resp = await api.post(`candidate/link`, newUrl)
             if(resp.status === 200 || resp.status === 201){
                 setUrlList([...urlList, resp.data])
                 notify('success', 'New URL added')
@@ -103,19 +103,34 @@ function Links({candidate_id,editable}){
 export default function CandidateProfile({candidateObj}) {
     const {notify} = useNotification('')
     let navigate = useNavigate();
-    const [course, setCourse] = useState({})
-    const [branch, setBranch] = useState({})
     const [IndStates, setIndStates] = useState([])
     const [allCourses, setAllCourses] = useState([])
     const [candidate, setCandidate] = useState(candidateObj) 
     const [updatedInputs, setUpdatedInputs] = useState({})
     const [errors, setErrors] = useState({})
-    const course_id = candidate.course_id;
-    const branch_id = candidate.branch_id;
     const genderList = ['Male','Female', 'Other']
     const [editable,setEditable] = useState(false)
 
-     useEffect(()=>{
+    const totalProfileFields = Object.entries(candidateObj || {}).length
+    const completedFieldCount = Object.entries(candidate || {}).filter(([_, value]) => {
+        if (value === null || value === undefined) return false
+        if (typeof value === 'string') return value.trim() !== ''
+        return true
+    }).length
+    const completionPercentage = totalProfileFields
+        ? Math.round((completedFieldCount / totalProfileFields) * 100)
+        : 0
+
+    const selectedCourse = allCourses.find(
+        (courseObj) => String(courseObj.course_id) === String(candidate.course_id)
+    ) || candidate.courseObj || {}
+    const availableBranches = selectedCourse.branches || []
+    async function fetchAllCourses() {
+        const resp = await api.get('/courses')
+        setAllCourses(resp.data)
+    }   
+
+    useEffect(()=>{
         const indian_states = [
             "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
             "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
@@ -126,6 +141,8 @@ export default function CandidateProfile({candidateObj}) {
         ]
         setIndStates(indian_states)
         setCandidate(candidateObj)
+        setUpdatedInputs({})
+        setErrors({})
     },[candidateObj])
 
     useEffect(()=>{
@@ -150,6 +167,44 @@ export default function CandidateProfile({candidateObj}) {
         const {name, type, value, checked } = e.target
         const fieldValue = type === 'checkbox' ? checked : value
         console.log(`${name} ${fieldValue}`);
+        if (name === 'course_id') {
+            const nextCourse = allCourses.find(
+                (courseObj) => String(courseObj.course_id) === String(fieldValue)
+            )
+            const nextBranches = nextCourse?.branches || []
+            const nextBranch = nextBranches[0] || {}
+
+            setCandidate(prev => ({
+                ...prev,
+                course_id: fieldValue,
+                courseObj: nextCourse || {},
+                branch_id: nextBranch.branch_id || '',
+                branchObj: nextBranch
+            }))
+            setUpdatedInputs(prev =>({
+                ...prev,
+                course_id: fieldValue,
+                branch_id: nextBranch.branch_id || ''
+            }))
+            return
+        }
+
+        if (name === 'branch_id') {
+            const nextBranch = availableBranches.find(
+                (branchObj) => String(branchObj.branch_id) === String(fieldValue)
+            )
+            setCandidate(prev => ({
+                ...prev,
+                branch_id: fieldValue,
+                branchObj: nextBranch || {}
+            }))
+            setUpdatedInputs(prev =>({
+                ...prev,
+                branch_id: fieldValue
+            }))
+            return
+        }
+
         setCandidate(prev=>({
             ...prev,
             [name]: fieldValue
@@ -159,6 +214,7 @@ export default function CandidateProfile({candidateObj}) {
             [name]: fieldValue
         }))
     }
+
     async function handleSubmit(){
         if(Object.keys(updatedInputs).length === 0){
             notify('info', 'No change Detected')
@@ -172,46 +228,16 @@ export default function CandidateProfile({candidateObj}) {
                     notify('success',"Profile Updated Successfully")
                 }else{
                     notify('error',resp.data.detail)
+                    setCandidate(candidateObj)
                 }
             }catch(error){
                 const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.response?.data || error.message || "Unknown error occurred";
                 notify("error", `Something went wrong - ${errorMessage}`);
+                setCandidate(candidateObj)
             }
         }
         setEditable(false)
     }
-    async function fetchCourseById(courseId){
-        const resp = await api.get(`/course/${courseId}`)
-        return resp.data || {}
-    }
-    useEffect(() => {
-        async function fetchCourse() {
-            const courseObj = await fetchCourseById(course_id)
-            // console.log(courseObj)
-            setCourse(courseObj)
-        }
-        async function fetchAllCourses() {
-            const resp = await api.get('/courses')
-            setAllCourses(resp.data)
-           
-        }   
-        async function fetchBranch() {
-            const resp = await api.get(`/branch/${branch_id}`)
-            if(resp.status === 400){
-                notify(resp.data.detail)
-            }
-            setBranch(resp.data)
-        }
-       
-        
-        fetchAllCourses()
-        if(course_id){
-            fetchCourse()
-        }
-        if(branch_id){
-            fetchBranch();
-        }
-    }, [course_id, branch_id]);
     const handleLogout = async () => {
         try {
             const response = await api.post('/logout');
@@ -225,6 +251,18 @@ export default function CandidateProfile({candidateObj}) {
             notify('error', error.response?.data?.detail);
         }
     };
+    async function removeJoinedUr() {
+        try {
+            const response = await api.delete('/candidate/joined-university');
+            if (response.status === 200) {
+                notify('success', 'You are removed from univeristy group');
+            } else {
+                notify('error', response.data?.detail);
+            }
+        } catch (error) {
+            notify('error', error.response?.data?.detail);
+        }
+    }
     return(
         <>
             <div className="profile-container">
@@ -239,7 +277,7 @@ export default function CandidateProfile({candidateObj}) {
                                 />
                             </div>
                             :<div className="avatar-alt">
-                                <FaUserTie className="profile-img-modern" />
+                                <FaUserGraduate className="profile-img-modern" />
                             </div>
                         }
                         <div className="role-badge-wrapper">
@@ -296,31 +334,51 @@ export default function CandidateProfile({candidateObj}) {
                                 <FaBriefcase className="stat-icon" />
                                 <div className="stat-info">
                                 <span className="stat-label">Applications</span>
-                                <strong className="stat-value">{candidate.job_application_count}/5</strong>
+                                <strong className="stat-value">{candidate.job_application_count || 0}/5</strong>
                                 </div>
                             </div>
                         </div>
 
                         <div className="badges-row-modern">
-                            {candidate.is_eligible ? (
+                            {candidate.is_verified ? (
                                 <span className="badge-modern badge-success">
-                                <FaCheckDouble /> Eligibilty Confirmed
+                                <FaCheckDouble /> Verified
                                 </span>
                             ) : (
                                 <span className="badge-modern badge-danger">
-                                <FaTimesCircle /> Not Eligible
+                                <FaTimesCircle /> Not Verified
                                 </span>
                             )}
-                            {candidate.is_verfied?<span className="badge-modern badge-danger">Verified</span>:null}
                             {candidate.is_active ? (
                                 <span className="badge-modern badge-active">
-                                <FaCheckCircle /> Active Account
+                                <FaCheckCircle /> Active Profile
                                 </span>
                             ) : (
                                 <span className="badge-modern badge-inactive">
                                 <FaInfoCircle /> Inactive
                                 </span>
                             )}
+                        </div>
+                        <div className="profile-completion-card">
+                            <div className="profile-completion-header">
+                                <span className="profile-completion-label">Profile Completion</span>
+                                <span className="profile-completion-meta">
+                                    {completedFieldCount} of {totalProfileFields} fields completed
+                                </span>
+                                <strong className="profile-completion-value">{completionPercentage}%</strong>
+                            </div>
+                            <input
+                                type="range"
+                                className="profile-completion-range"
+                                max={totalProfileFields}
+                                readOnly
+                                disabled
+                                value={completedFieldCount}
+                                style={{
+                                    background: `linear-gradient(90deg, #2563eb 0%, #0ea5e9 ${completionPercentage}%, #dbeafe ${completionPercentage}%, #dbeafe 100%)`
+                                }}
+                            />
+                           
                         </div>
                     </div>
                 </div>
@@ -329,18 +387,18 @@ export default function CandidateProfile({candidateObj}) {
                         <div className='partition-box' id="contact-info">
                             <h3>Contact Info</h3>
                             <div className="form-group">
-                                <label htmlFor="email"><FaEnvelope /> Email Address</label>
+                                <label htmlFor="email"><FaEnvelope /> Email Address <small>(readonly)</small></label>
                                 <input id="email" type='email' readOnly disabled value={candidate.email} placeholder='Your Email' />
                                 <span className="error-massage">{errors.email || ""}</span>
                             </div>
                             <div className="form-group">
-                                <label htmlFor="contact"><FaPhone /> Mobile Number</label>
-                                <input id="contact" type='text' name='contact' className='profile-input' value={candidate.contact?candidate.contact:""} placeholder='Add Mobile number' onChange={handleProfileUpdate} />
+                                <label htmlFor="password"><FaLock /> Password <small>(readonly)</small></label>
+                                <input id="password" type="password" readOnly className='profile-input' value={candidate.password} />
                                 <span className="error-massage"></span>
                             </div>
                             <div className="form-group">
-                                <label htmlFor="password"><FaLock /> Password</label>
-                                <input id="password" type="password" readOnly className='profile-input' value={candidate.password} />
+                                <label htmlFor="contact"><FaPhone /> Mobile Number</label>
+                                <input id="contact" type='text' name='contact' className='profile-input' value={candidate.contact?candidate.contact:""} placeholder='Add Mobile number' onChange={handleProfileUpdate} />
                                 <span className="error-massage"></span>
                             </div>
                         </div>
@@ -348,19 +406,20 @@ export default function CandidateProfile({candidateObj}) {
                             <h3>Academics</h3>
                             <div className="form-group">
                                 <label htmlFor="university"><FaUniversity /> University</label>
-                                <input id="university" type='text' name='university_name' className='profile-input' value={candidate.university_name?candidate.university_name:""} placeholder='Add university name' onChange={handleProfileUpdate} />
+                                <input id="university" type='text' name='university_name' readOnly={candidate.joined_ur_name?true:false} disabled={candidate.joined_ur_name?true:false} className='profile-input' value={candidate.university_name?candidate.university_name:""} placeholder='Add university name' onChange={handleProfileUpdate} />
+                                {candidate.joined_ur_name?<small>You have joined the University, can't be changed</small>:null}
                                 <span className="error-massage"></span>
                             </div>
                             <div className="form-group">
                                 <label htmlFor="course"><FaBook /> Course</label>
-                                <select id="course" className='profile-input' name='course_id' onChange={handleProfileUpdate} value={candidate.course_id || ''}>
+                                <select id="course" className='profile-input' name='course_id' onChange={handleProfileUpdate} value={candidate.course_id || ''} onClick={fetchAllCourses}>
                                     {!editable
-                                        ?course && course_id
-                                            ?<option value={course.course_id}>{course.course_title}</option>
+                                        ?candidate.courseObj?.course_id
+                                            ?<option value={candidate.courseObj.course_id}>{candidate.courseObj.course_title}</option>
                                             :<option value="">Select Course</option>
                                         :(
                                             <>
-                                               <option value={course.course_id} disabled >{course.course_title}</option>
+                                               <option value="" disabled>{candidate.courseObj?.course_title || 'Select Course'}</option>
                                                {
                                                 allCourses.map((courseObj,index)=>(
                                                     <option key={index} value={courseObj.course_id} style={{color:'black'}}>{courseObj.course_title}</option>
@@ -374,15 +433,16 @@ export default function CandidateProfile({candidateObj}) {
                             </div>
                             <div className="form-group">
                                 <label htmlFor="branch"><FaGraduationCap /> Branch</label>
-                                <select id="branch" name='branch_id' onChange={handleProfileUpdate} className='profile-input' value={branch.branch_id || ''}>
+                                <select id="branch" name='branch_id' onChange={handleProfileUpdate} className='profile-input' value={candidate.branch_id || ''}>
                                     {!editable
-                                        ?branch.branch_id
-                                            ?<option value={branch.branch_id||""}>{branch.branch_title}</option>
+                                        ?candidate.branchObj?.branch_id
+                                            ?<option value={candidate.branchObj.branch_id||""}>{candidate.branchObj.branch_title}</option>
                                             :<option value="">Select Branch</option>
                                         :(
                                             <>
+                                                <option value="" disabled>{candidate.branchObj?.branch_title || 'Select Branch'}</option>
                                                {
-                                                course.branches && course.branches.map((branchObj, index)=>(
+                                                availableBranches.map((branchObj, index)=>(
                                                     <option key={index} value={branchObj.branch_id} style={{color:'black'}}>{branchObj.branch_title}</option>
                                                 ))
                                                }
@@ -409,7 +469,7 @@ export default function CandidateProfile({candidateObj}) {
                             <h3>Preferences</h3>
                             <div className="form-group">
                                 <label htmlFor="jobPreferences"><FaBriefcase /> Job Preference</label>
-                                <input type='text' id="jobPreferences" rows={5} type="text" name="job_preference" className='profile-input' value={candidate.job_preference?candidate.job_preference:""} placeholder='Add Role Preferences' onChange={handleProfileUpdate} />
+                                <input type='text' id="jobPreferences" rows={5} name="job_preference" className='profile-input' value={candidate.job_preference?candidate.job_preference:""} placeholder='Add Role Preferences' onChange={handleProfileUpdate} />
                                 <span className="error-massage"></span>
                             </div>
                             <div className="form-group">
@@ -447,9 +507,6 @@ export default function CandidateProfile({candidateObj}) {
                                         </div>
                                     );
                                 })}
-                                {!candidate.gender && !editable ? (
-                                    <span className="error-massage">Gender not added</span>
-                                ) : null}
                             </div>
                             <div className="form-group">
                                 <label htmlFor="aboutMe"><FaBook /> Your Bio</label>
@@ -512,11 +569,18 @@ export default function CandidateProfile({candidateObj}) {
                             <Links candidate_id={candidateObj.candidate_id} editable={editable}/>
                         </div>
                         <div className='partition-box' id="Actions">
-                           <h3>Actions</h3>
-                           <div className="form-group">
-                               <label><i className="fas fa-trash-alt"></i> Delete Account</label>
-                               <span className="error-massage"></span>
-                           </div>
+                            <h3>Actions</h3>       
+                            {candidate.joined_ur_name
+                                ?<div className="form-group">
+                                    <button type="button" className="btn-primary" onClick={removeJoinedUr}><FaTrashAlt /> Remove University collaboration</button>
+                                </div>
+                                :<div className="form-group">
+                                    <label><FaHashtag /> Join University group using token</label>     
+                                    <input type="text" className="profile-input" name="ur_joining_token" placeholder="Put the token shared by your University" onChange={handleProfileUpdate}/>
+                                    <span className="error-massage"></span>
+                                    
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>

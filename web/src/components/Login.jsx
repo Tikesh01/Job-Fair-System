@@ -134,12 +134,11 @@ function Login(){
                     {errors.error && <span className="error-massage"><br />{errors.error}</span>}
                    
                     <button type="submit" className="btn btn-s btn-primary">Login</button>
-                    
+
+                    <small className='signup-text'>
+                        Don't have an account? <a href="/signup" className="signup-link"> Sign Up</a>
+                    </small>
                 </form>
-                
-                <p className="login-footer">
-                    Don't have an account? <a href="/signup" className="signup-link"> Sign Up</a>
-                </p>
             </div>
         </div>
     </>)
