@@ -602,8 +602,8 @@ def create_candidate_job_preference(request:Request, preferenceObj:CandidateJobP
         candidate_id = request.state.user.get('sub')
         job_title = validate_job_preference_title(preferenceObj.job_title)
 
-        if candidate_job_preference_count(candidate_id) >= 5:
-            raise HTTPException(status_code=409, detail="Maximum 5 job preferences allowed")
+        if candidate_job_preference_count(candidate_id) >= 3:
+            raise HTTPException(status_code=409, detail="Maximum 3 job preferences allowed")
 
         ensure_unique_candidate_job_preference(candidate_id, job_title)
 

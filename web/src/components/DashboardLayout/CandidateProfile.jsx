@@ -5,8 +5,8 @@ import { FaBriefcase, FaCheckCircle, FaCheckDouble, FaInfoCircle, FaTimesCircle,
 import api from "../../api/axiosapi";
 import { useNavigate } from "react-router-dom";
 
-const MAX_JOB_PREFERENCES = 5
-const MAX_JOB_PREFERENCE_TITLE_LENGTH = 50
+const MAX_JOB_PREFERENCES = 3
+const MAX_JOB_PREFERENCE_TITLE_LENGTH = 30
 
 function normalizeJobTitle(title) {
     return String(title || '').trim().replace(/\s+/g, ' ')
