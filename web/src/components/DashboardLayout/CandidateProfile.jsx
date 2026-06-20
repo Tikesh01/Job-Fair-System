@@ -5,6 +5,211 @@ import { FaBriefcase, FaCheckCircle, FaCheckDouble, FaInfoCircle, FaTimesCircle,
 import api from "../../api/axiosapi";
 import { useNavigate } from "react-router-dom";
 
+const MAX_JOB_PREFERENCES = 5
+const MAX_JOB_PREFERENCE_TITLE_LENGTH = 50
+
+function normalizeJobTitle(title) {
+    return String(title || '').trim().replace(/\s+/g, ' ')
+}
+
+function JobPreferences({candidate_id, editable}) {
+    const {notify} = useNotification('')
+    const [preferenceList, setPreferenceList] = useState([])
+    const [draftTitle, setDraftTitle] = useState('')
+    const [error, setError] = useState('')
+    const canAddMore = preferenceList.length < MAX_JOB_PREFERENCES
+
+    useEffect(() => {
+        async function fetchPreferences() {
+            if (!candidate_id) return
+            try {
+                const resp = await api.get('/candidate/job-preference')
+                if (resp.status === 200) {
+                    setPreferenceList(resp.data || [])
+                    setError('')
+                }
+            } catch (error) {
+                notify('error', error.response?.data?.detail || 'Failed to load job preferences')
+            }
+        }
+        fetchPreferences()
+    }, [candidate_id])
+
+    function validatePreferenceTitle(title, currentPreferenceId = null) {
+        const nextTitle = normalizeJobTitle(title)
+
+        if (!nextTitle) {
+            return 'Enter a job title first'
+        }
+
+        if (nextTitle.length > MAX_JOB_PREFERENCE_TITLE_LENGTH) {
+            return `Job title cannot exceed ${MAX_JOB_PREFERENCE_TITLE_LENGTH} characters`
+        }
+
+        const hasDuplicate = preferenceList.some((preference) => (
+            preference.id !== currentPreferenceId &&
+            normalizeJobTitle(preference.job_title).toLowerCase() === nextTitle.toLowerCase()
+        ))
+
+        return hasDuplicate ? 'This job title is already added' : ''
+    }
+
+    function handlePreferenceChange(preferenceId, value) {
+        setPreferenceList(prev => prev.map((preference) => (
+            preference.id === preferenceId
+                ? { ...preference, job_title: value }
+                : preference
+        )))
+    }
+
+    async function addPreference() {
+        if (!canAddMore) {
+            setError(`You can add up to ${MAX_JOB_PREFERENCES} job preferences only`)
+            return
+        }
+
+        const validationError = validatePreferenceTitle(draftTitle)
+        if (validationError) {
+            setError(validationError)
+            return
+        }
+
+        try {
+            const resp = await api.post('/candidate/job-preference', {
+                job_title: normalizeJobTitle(draftTitle)
+            })
+            if (resp.status === 200 || resp.status === 201) {
+                setPreferenceList(prev => [...prev, resp.data])
+                setDraftTitle('')
+                setError('')
+                notify('success', 'Job preference added')
+            }
+        } catch (error) {
+            setError(error.response?.data?.detail || 'Failed to add job preference')
+        }
+    }
+
+    async function updatePreference(preferenceId) {
+        const preference = preferenceList.find((item) => item.id === preferenceId)
+        const validationError = validatePreferenceTitle(preference?.job_title, preferenceId)
+        if (validationError) {
+            setError(validationError)
+            return
+        }
+
+        try {
+            const payload = { job_title: normalizeJobTitle(preference.job_title) }
+            const resp = await api.put(`/candidate/job-preference/${preferenceId}`, payload)
+            if (resp.status === 200) {
+                setPreferenceList(prev => prev.map((item) => (
+                    item.id === preferenceId ? resp.data : item
+                )))
+                setError('')
+                notify('success', 'Job preference updated')
+            }
+        } catch (error) {
+            setError(error.response?.data?.detail || 'Failed to update job preference')
+        }
+    }
+
+    async function deletePreference(preferenceId) {
+        try {
+            const resp = await api.delete(`/candidate/job-preference/${preferenceId}`)
+            if (resp.status === 200) {
+                setPreferenceList(prev => prev.filter((preference) => preference.id !== preferenceId))
+                setError('')
+                notify('success', 'Job preference deleted')
+            }
+        } catch (error) {
+            setError(error.response?.data?.detail || 'Failed to delete job preference')
+        }
+    }
+
+    function handleKeyDown(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault()
+            addPreference()
+        }
+    }
+
+    return (
+        <div className="form-group">
+            <label htmlFor="jobPreferences"><FaBriefcase /> Job Preferences <small>{preferenceList.length}/{MAX_JOB_PREFERENCES}</small></label>
+            <div className={`job-preference-control ${!editable ? 'readonly-mode' : ''}`}>
+                {!editable && (
+                    <div className="job-preference-chips">
+                        {preferenceList.length > 0
+                            ? preferenceList.map((preference) => (
+                                <span className="job-preference-chip btn-outline-modern" key={preference.id}>
+                                    {preference.job_title}
+                                </span>
+                            ))
+                            : <span className="info-span"><FaInfoCircle /> No job preference added</span>
+                        }
+                    </div>
+                )}
+                {editable && preferenceList.length > 0 && (
+                    <div className="job-preference-edit-list">
+                        {preferenceList.map((preference) => (
+                            <div className="job-preference-item" key={preference.id}>
+                                <input
+                                    type="text"
+                                    className="profile-input job-preference-input"
+                                    value={preference.job_title || ''}
+                                    placeholder="Job title"
+                                    onChange={(event) => handlePreferenceChange(preference.id, event.target.value)}
+                                    maxLength={MAX_JOB_PREFERENCE_TITLE_LENGTH}
+                                />
+                                <button
+                                    type="button"
+                                    className="btn-secondary"
+                                    onClick={() => updatePreference(preference.id)}
+                                    title="Save job preference"
+                                >
+                                    <FaRegSave />
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn-secondary"
+                                    onClick={() => deletePreference(preference.id)}
+                                    title="Delete job preference"
+                                >
+                                    <FaTrashAlt />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                {editable && (
+                    <div className="job-preference-add-row">
+                        <input
+                            type="text"
+                            id="jobPreferences"
+                            className="profile-input job-preference-input"
+                            value={draftTitle}
+                            placeholder={canAddMore ? 'Add job title, e.g. Frontend Developer' : 'Maximum preferences added'}
+                            onChange={(event) => setDraftTitle(event.target.value)}
+                            onKeyDown={handleKeyDown}
+                            disabled={!canAddMore}
+                            maxLength={MAX_JOB_PREFERENCE_TITLE_LENGTH}
+                        />
+                        <button
+                            type="button"
+                            className="btn-secondary"
+                            onClick={addPreference}
+                            disabled={!canAddMore}
+                            title="Add job preference"
+                        >
+                            <FaPlusCircle /> Add
+                        </button>
+                    </div>
+                )}
+            </div>
+            <span className="error-massage">{error || ""}</span>
+        </div>
+    )
+}
+
 function Links({candidate_id,editable}){
     const [urlList,setUrlList] = useState([])
     const {notify} = useNotification('')
@@ -467,11 +672,10 @@ export default function CandidateProfile({candidateObj}) {
                         </div>
                         <div className='partition-box' id="preferences">
                             <h3>Preferences</h3>
-                            <div className="form-group">
-                                <label htmlFor="jobPreferences"><FaBriefcase /> Job Preference</label>
-                                <input type='text' id="jobPreferences" rows={5} name="job_preference" className='profile-input' value={candidate.job_preference?candidate.job_preference:""} placeholder='Add Role Preferences' onChange={handleProfileUpdate} />
-                                <span className="error-massage"></span>
-                            </div>
+                            <JobPreferences
+                                candidate_id={candidateObj.candidate_id}
+                                editable={editable}
+                            />
                             <div className="form-group">
                                 <label htmlFor="salaryPreferences"><FaMoneyBillWave /> Salary Preference</label>
                                 <input id="salaryPreferences" type="number" name='salary_preference' className='profile-input' value={candidate.salary_preference?candidate.salary_preference:""} placeholder='Add Salary Preferences' onChange={handleProfileUpdate} />

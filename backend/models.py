@@ -29,6 +29,12 @@ class feedback(BaseModel):
     msg:str
     rating:int
 
+class CandidateJobPreferenceCreate(BaseModel):
+    job_title: str = Field(..., min_length=1, max_length=50)
+
+class CandidateJobPreferenceUpdate(BaseModel):
+    job_title: str = Field(..., min_length=1, max_length=50)
+
 class JobTypeEnum(str, Enum):
     INTERNSHIP = "Internship"
     FULL_TIME = "Full time"

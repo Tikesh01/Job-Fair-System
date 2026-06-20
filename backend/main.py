@@ -13,6 +13,8 @@ from models import (
     JobRoleUpdate,
     HrCreate,
     HrUpdate,
+    CandidateJobPreferenceCreate,
+    CandidateJobPreferenceUpdate,
     feedback,
 )
 import random
@@ -75,6 +77,17 @@ def validate_role(role:str):
         return role.strip()
     else:
         return False
+
+def normalize_job_preference_title(title):
+    return re.sub(r'\s+', ' ', str(title or '').strip())
+
+def validate_job_preference_title(title):
+    normalized_title = normalize_job_preference_title(title)
+    if not normalized_title:
+        raise HTTPException(status_code=400, detail="Job preference title is required")
+    if len(normalized_title) > 50:
+        raise HTTPException(status_code=400, detail="Job preference title cannot exceed 50 characters")
+    return normalized_title
         
 def check_otp_limit(email:str) -> bool:
     result = db.query("SELECT id FROM otps WHERE email = %s", params=(email, ))
@@ -354,6 +367,8 @@ def update_profile(request:Request, data:dict):
                 ur_name = join_ur_group(id, data['ur_joining_token'])
                 data.pop('ur_joining_token')
                 data['university_name'] = ur_name
+            if 'job_preference' in data or 'job_preferences' in data:
+                raise HTTPException(status_code=400, detail="Use candidate job preference endpoints")
             if 'is_eligible' in data:
                 raise HTTPException(status_code=400, detail="Cannot be chnaged!")
             if 'course_id' in data:
@@ -523,6 +538,146 @@ def get_candidate_branch_detail(branch_id:int):
         return result[0]
     except Exception as e:
         raise HTTPException(status_code=400, detail="Error Occured")
+
+def get_candidate_job_preference_or_404(preference_id, candidate_id):
+    result = db.query(
+        """
+        SELECT id, job_title
+        FROM candidate_job_preferences
+        WHERE id = %s AND candidate_id = %s
+        """,
+        params=(preference_id, candidate_id, )
+    )
+
+    if not result:
+        raise HTTPException(status_code=404, detail="Job preference not found")
+
+    return result[0]
+
+def candidate_job_preference_count(candidate_id):
+    return db.query(
+        "SELECT COUNT(*) AS total FROM candidate_job_preferences WHERE candidate_id = %s",
+        params=(candidate_id, )
+    )[0]['total']
+
+def ensure_unique_candidate_job_preference(candidate_id, job_title, exclude_id=None):
+    params = [candidate_id, job_title.lower()]
+    q = """
+        SELECT id
+        FROM candidate_job_preferences
+        WHERE candidate_id = %s AND LOWER(job_title) = %s
+    """
+
+    if exclude_id is not None:
+        q += " AND id != %s"
+        params.append(exclude_id)
+
+    existing = db.query(q, params=tuple(params))
+    if existing:
+        raise HTTPException(status_code=409, detail="Duplicate job preference titles are not allowed")
+    
+@app.get("/candidate/job-preference")
+@require_roles("candidate")
+def get_candidate_job_preferences(request:Request):
+    try:
+        candidate_id = request.state.user.get('sub')
+        return db.query(
+            """
+            SELECT id, job_title
+            FROM candidate_job_preferences
+            WHERE candidate_id = %s
+            ORDER BY id
+            """,
+            params=(candidate_id, )
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Cant Find job preferences")
+
+@app.post("/candidate/job-preference")
+@require_roles("candidate")
+def create_candidate_job_preference(request:Request, preferenceObj:CandidateJobPreferenceCreate):
+    try:
+        candidate_id = request.state.user.get('sub')
+        job_title = validate_job_preference_title(preferenceObj.job_title)
+
+        if candidate_job_preference_count(candidate_id) >= 5:
+            raise HTTPException(status_code=409, detail="Maximum 5 job preferences allowed")
+
+        ensure_unique_candidate_job_preference(candidate_id, job_title)
+
+        db.query(
+            """
+            INSERT INTO candidate_job_preferences(candidate_id, job_title)
+            VALUES(%s, %s)
+            """,
+            params=(candidate_id, job_title, ),
+            commit=True
+        )
+
+        created_preference = db.query(
+            """
+            SELECT id, job_title
+            FROM candidate_job_preferences
+            WHERE candidate_id = %s
+            ORDER BY id DESC
+            LIMIT 1
+            """,
+            params=(candidate_id, )
+        )
+        return created_preference[0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Some Error Occured while creating job preference")
+
+@app.put("/candidate/job-preference/{preference_id}")
+@require_roles("candidate")
+def update_candidate_job_preference(request:Request, preference_id:int, preferenceObj:CandidateJobPreferenceUpdate):
+    try:
+        candidate_id = request.state.user.get('sub')
+        get_candidate_job_preference_or_404(preference_id, candidate_id)
+        job_title = validate_job_preference_title(preferenceObj.job_title)
+        ensure_unique_candidate_job_preference(candidate_id, job_title, preference_id)
+
+        db.query(
+            """
+            UPDATE candidate_job_preferences
+            SET job_title = %s
+            WHERE id = %s AND candidate_id = %s
+            """,
+            params=(job_title, preference_id, candidate_id, ),
+            commit=True
+        )
+
+        return {"id": preference_id, "job_title": job_title}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Some Error Occured while updating job preference")
+
+@app.delete("/candidate/job-preference/{preference_id}")
+@require_roles("candidate")
+def delete_candidate_job_preference(request:Request, preference_id:int):
+    try:
+        candidate_id = request.state.user.get('sub')
+        get_candidate_job_preference_or_404(preference_id, candidate_id)
+
+        db.query(
+            """
+            DELETE FROM candidate_job_preferences
+            WHERE id = %s AND candidate_id = %s
+            """,
+            params=(preference_id, candidate_id, ),
+            commit=True
+        )
+
+        return {'msg' : "Job preference DELETE Success"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Some Error Occured while deleting job preference")
     
 @app.get("/candidate/link")
 @require_roles("candidate")
@@ -1137,6 +1292,12 @@ def get_company_job_applications(request:Request):
                 ja.candidate_id AS applicant_id,
                 ja.is_applied,
                 c.name AS candidate_name,
+                c.email AS candidate_email,
+                c.contact AS candidate_contact,
+                c.city,
+                c.state,
+                c.about,
+                cjp.job_preferences,
                 c.university_name,
                 crs.course_title,
                 br.branch_title
@@ -1150,6 +1311,14 @@ def get_company_job_applications(request:Request):
                 ON crs.course_id = c.course_id
             LEFT JOIN branch br
                 ON br.branch_id = c.branch_id
+            LEFT JOIN (
+                SELECT
+                    candidate_id,
+                    GROUP_CONCAT(job_title ORDER BY id SEPARATOR ', ') AS job_preferences
+                FROM candidate_job_preferences
+                GROUP BY candidate_id
+            ) cjp
+                ON cjp.candidate_id = c.candidate_id
             WHERE jr.company_id = %s
             ORDER BY jr.is_closed ASC, jr.job_role_id DESC, ja.application_id DESC
             ''',
