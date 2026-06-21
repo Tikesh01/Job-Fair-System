@@ -1,40 +1,46 @@
 .smaller-nav-menu{
+    position: fixed;
     width: 100%;
+    left: 50%;
+    transform: translate(-50%);
+    z-index:  999;
+    margin-top: -1rem;
+    padding: 0.5rem;
     display: flex;
     align-items: center;
     justify-content: space-evenly;
     background: var(--bg-container);
-    border-radius: 22px;
-    padding: 0.5rem;
-    /* padding-top: 0; */
-    /* background: #776363; */
+    border-bottom-left-radius: 22px;
+    border-bottom-right-radius: 22px;
+    border-bottom: 1px solid #4a5672e0;
+    border-left: 1px solid #4a5672e0;
+    border-right: 1px solid #4a5672e0;
     overflow: auto;
-
 }
 
 .smaller-nav-menu .dashboardlink{
     /* background: #000; */
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 0.5rem;
     cursor: pointer;
     transition: all 1.0s ease;
     width: auto;
-    border-radius: 50%;
-    padding: 0.5rem 0.7rem;
-    color: #4a5672e0;
+    border-radius: 18px;
+    border: 1px solid #9b9da196;
+    padding: 0.35rem 0.85rem;
+    color: #4a5672a1;
 }
 .dashboardlink:hover,
 .dashboardlink.active {
     color: var(--highlight-color);
-    
+    border-color: var(--highlight-color);
 }
 .dashboardlink .db-nav-icon{
-    font-size: 1.7rem;
+    font-size: 1.1rem;
 }
 .dashboardlink .db-nav-text{
-    font-size: small;
-    display: none;
+    font-size: smaller;
 }
 
 @media (max-width: 1024px){
@@ -53,8 +59,29 @@
     
     }
     .dashboardlink .db-nav-icon{
-        font-size: 1.3rem;
+        font-size: 1.1rem;
        
+    }
+    .dashboardlink .db-nav-text{
+        font-size: small;
+       
+    }
+}
+@media (max-width: 500px){
+    .smaller-nav-menu {
+        margin-top: -2rem;
+        padding: 0.35rem;
+    }
+    .smaller-nav-menu .dashboardlink{
+        border: none;
+    }
+    .dashboardlink .db-nav-text{
+        display: none;
+    }
+}
+@media (max-width: 376px){
+    .smaller-nav-menu {
+       margin-top: -1rem;
     }
 }
 @media (max-width: 320px){
@@ -62,7 +89,7 @@
     
     }
     .smaller-nav-menu .dashboardlink {
-        font-size: 0.55rem;
+        font-size: 0.6rem;
     }
 
     .dashboardlink .db-nav-icon{

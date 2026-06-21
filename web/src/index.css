@@ -42,11 +42,6 @@ a {
 a:hover {
  color: var(--main-color);
 }
-a:focus {
-  outline: 2px solid #646cff;
-  outline-offset: 2px;
-  border-radius: 2px;
-}
 
 h1{
   font-size: 3.2em;
@@ -101,12 +96,6 @@ input[type=checkbox], input[type=radio]{
 }
 input[type=range]{
   padding: 0;
-  
-}
-input[type=range]:read-only{
-}
-
-input[type=radio]{
   
 }
 textarea:focus, input:focus, select:focus,

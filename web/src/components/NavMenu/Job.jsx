@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../api/axiosapi';
 import VacancyCard from '../DashboardLayout/VacancyCard'
 import {useNotification} from '../../contexts/NotificationContext'
+import { getCookie } from '../../utils/cookies';
 
 export default function Job() {
     const {notify} = useNotification('')
@@ -13,7 +14,12 @@ export default function Job() {
     const [jobTypeFilter, setJobTypeFilter] = useState('All')
     const [statusFilter, setStatusFilter] = useState('All')
     const [salaryFilter, setSalaryFilter] = useState('All')
+    const [usePreferenceFilter, setUsePreferenceFilter] = useState(false)
+    const [jobPreferences, setJobPreferences] = useState([])
+    const [candidateSalaryPreference, setCandidateSalaryPreference] = useState(0)
     const navigate = useNavigate()
+    const role = getCookie('role')
+    const canUsePreferenceFilter = role === 'candidate'
 
     async function selectVacancy(jobRoleId) {
         try {
@@ -60,12 +66,57 @@ export default function Job() {
         fetchPostedVacancy()
     }, [])
 
+    useEffect(() => {
+        async function fetchCandidatePreferenceFilters() {
+            if (!canUsePreferenceFilter) return
+
+            try {
+                const [preferenceResp, profileResp] = await Promise.all([
+                    api.get('/candidate/job-preference'),
+                    api.get('/profile')
+                ])
+
+                setJobPreferences(preferenceResp.data || [])
+                setCandidateSalaryPreference(Number(profileResp.data?.salary_preference || 0))
+            } catch (error) {
+                setJobPreferences([])
+                setCandidateSalaryPreference(0)
+            }
+        }
+
+        fetchCandidatePreferenceFilters()
+    }, [canUsePreferenceFilter])
+
     const jobTypes = useMemo(() => (
         ['All', ...new Set(vacancyList.map((vacancy) => vacancy.job_type).filter(Boolean))]
     ), [vacancyList])
 
+    const hasPreferenceCriteria = jobPreferences.length > 0 || candidateSalaryPreference > 0
+
+    useEffect(() => {
+        if (!hasPreferenceCriteria && usePreferenceFilter) {
+            setUsePreferenceFilter(false)
+        }
+    }, [hasPreferenceCriteria, usePreferenceFilter])
+
+    const preferenceMetaText = useMemo(() => {
+        const parts = []
+        if (jobPreferences.length > 0) {
+            parts.push(`${jobPreferences.length} role${jobPreferences.length > 1 ? 's' : ''}`)
+        }
+        if (candidateSalaryPreference > 0) {
+            parts.push(`₹${candidateSalaryPreference.toLocaleString()}+`)
+        }
+
+        return parts.length > 0 ? parts.join(' • ') : 'Add preferences in profile'
+    }, [candidateSalaryPreference, jobPreferences])
+
     const filteredVacancies = useMemo(() => {
         const normalizedSearch = searchTerm.trim().toLowerCase()
+        const normalizedJobPreferences = jobPreferences
+            .map((preference) => preference.job_title?.trim().toLowerCase())
+            .filter(Boolean)
+
         return vacancyList.filter((vacancy) => {
             const matchesSearch = !normalizedSearch || [
                 vacancy.job_role_title,
@@ -86,9 +137,22 @@ export default function Job() {
                 (salaryFilter === '600000-1000000' && salary > 600000 && salary <= 1000000) ||
                 (salaryFilter === '1000000+' && salary > 1000000)
 
-            return matchesSearch && matchesType && matchesStatus && matchesSalary
+            const normalizedVacancyTitle = vacancy.job_role_title?.trim().toLowerCase() || ''
+            const matchesPreferredJobRole =
+                !usePreferenceFilter ||
+                normalizedJobPreferences.length === 0 ||
+                normalizedJobPreferences.some((jobTitle) => (
+                    normalizedVacancyTitle.includes(jobTitle) ||
+                    jobTitle.includes(normalizedVacancyTitle)
+                ))
+            const matchesPreferredSalary =
+                !usePreferenceFilter ||
+                candidateSalaryPreference <= 0 ||
+                salary >= candidateSalaryPreference
+
+            return matchesSearch && matchesType && matchesStatus && matchesSalary && matchesPreferredJobRole && matchesPreferredSalary
         })
-    }, [jobTypeFilter, statusFilter, salaryFilter, searchTerm, vacancyList])
+    }, [candidateSalaryPreference, jobPreferences, jobTypeFilter, statusFilter, salaryFilter, searchTerm, usePreferenceFilter, vacancyList])
 
     return (
         <div className="vacancy-list-container">
@@ -107,6 +171,21 @@ export default function Job() {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </label>
+                    {canUsePreferenceFilter && (
+                        <label className={`preference-filter-toggle ${!hasPreferenceCriteria ? 'disabled' : ''}`}>
+                            <input
+                                type="checkbox"
+                                checked={usePreferenceFilter}
+                                disabled={!hasPreferenceCriteria}
+                                onChange={(e) => setUsePreferenceFilter(e.target.checked)}
+                            />
+                            <span className="preference-toggle-switch" aria-hidden="true"></span>
+                            <span className="preference-toggle-text">
+                                See Jobs based on Job role and Salary References
+                                <small>{preferenceMetaText}</small>
+                            </span>
+                        </label>
+                    )}
                     <div className="filter-actions">
                         <label className="vacancy-filter">
                             <FaBriefcase />
@@ -145,6 +224,7 @@ export default function Job() {
                                 setJobTypeFilter('All')
                                 setStatusFilter('All')
                                 setSalaryFilter('All')
+                                setUsePreferenceFilter(false)
                             }}
                         >
                             <FaFilter />
@@ -154,8 +234,6 @@ export default function Job() {
                 </div>
                 
             </div>
-
-            
 
             <div className="vacancy-list-grid">
                 {filteredVacancies.length > 0 ? (

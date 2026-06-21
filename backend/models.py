@@ -2,7 +2,10 @@ from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from datetime import date, time
 from enum import Enum
-
+class admin(BaseModel):
+    email: EmailStr
+    password: str
+    
 class otpRequest(BaseModel):
     email: EmailStr
     role: str

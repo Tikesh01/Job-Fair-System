@@ -41,7 +41,7 @@ export default function DashboardNav(){
                                 className={link.to === currentPath ?'dashboardlink active':'dashboardlink'} to={link.to}
                             >
                                 <span className='db-nav-icon'>{link.icon}</span>
-                                <span className="db-nav-text"> </span>
+                                <span className="db-nav-text">{link.text}</span>
                             </Link>
                         ))
                     }

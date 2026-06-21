@@ -16,6 +16,7 @@ from models import (
     CandidateJobPreferenceCreate,
     CandidateJobPreferenceUpdate,
     feedback,
+    admin,
 )
 import random
 import string
@@ -64,6 +65,7 @@ db = Db(host=db_host, port=db_port, user=db_user, password=db_password,  databas
 secret_key = os.getenv('SECRET_KEY')
 algorithm = os.getenv('ALGORITHM')
 expiry_minutes = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES'))
+
 
 def validate_email(email: str) -> bool:
     email_re = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
@@ -450,6 +452,22 @@ def add_feedback(fbk:feedback):
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Can't Submit Feedback")
+    
+
+################################### admin #############################################################
+@app.post("/admin/login")
+def admin_login(data:admin):
+    email = data.email
+    password = data.password
+    if not validate_email(email):
+        raise HTTPException(status_code=400, detail="Invalid Email")
+
+    admin = db.query("SELECT * FROM admin WHERE email = %s AND password = %s", params=(email, password))
+
+    if(len(admin) > 0):
+        return {"status":"ok","msg":"Log in successfull"}
+    
+    raise HTTPException(status_code=400, detail="User Not Exists")
 
 ######################################## == Candidate == ################################################
 def get_candidate_joined_university(candidate_id):

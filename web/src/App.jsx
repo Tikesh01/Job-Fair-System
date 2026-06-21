@@ -24,6 +24,22 @@ import Vacancy from './components/DashboardLayout/Company/Vacancy'
 import Hr from './components/DashboardLayout/Company/Hr'
 import Students from './components/DashboardLayout/University/Students';
 
+// Admin Components
+import AdminLogin from './components/Admin/AdminLogin';
+import AdminDashboard from './components/Admin/AdminDashboard';
+import DashboardOverview from './components/Admin/pages/DashboardOverview';
+import CandidatesManagement from './components/Admin/pages/CandidatesManagement';
+import CompaniesManagement from './components/Admin/pages/CompaniesManagement';
+import UniversitiesManagement from './components/Admin/pages/UniversitiesManagement';
+import JobRolesManagement from './components/Admin/pages/JobRolesManagement';
+import JobApplicationsManagement from './components/Admin/pages/JobApplicationsManagement';
+import HRsManagement from './components/Admin/pages/HRsManagement';
+import ManagersManagement from './components/Admin/pages/ManagersManagement';
+import VolunteersManagement from './components/Admin/pages/VolunteersManagement';
+import WorkshopsManagement from './components/Admin/pages/WorkshopsManagement';
+import JobFairDatesManagement from './components/Admin/pages/JobFairDatesManagement';
+import FeedbackManagement from './components/Admin/pages/FeedbackManagement';
+
 function App() {
     const [token, setToken] = useState(getCookie('token'))
     const [role, setRole] = useState(getCookie('role'))
@@ -55,6 +71,24 @@ function App() {
                         <Route path='/about' element={<About />} />
                         <Route path='/contact' element={<Contact />} />
                         <Route path='/imp-dates' element={<JobfairDates />} />
+                        
+                        {/* Admin Routes */}
+                        <Route path='/admin/login' element={<AdminLogin />} />
+                        <Route path='/admin/dashboard' element={<AdminDashboard />}>
+                            <Route path='overview' element={<DashboardOverview />} />
+                            <Route path='candidates' element={<CandidatesManagement />} />
+                            <Route path='companies' element={<CompaniesManagement />} />
+                            <Route path='universities' element={<UniversitiesManagement />} />
+                            <Route path='jobroles' element={<JobRolesManagement />} />
+                            <Route path='jobapplications' element={<JobApplicationsManagement />} />
+                            <Route path='hrs' element={<HRsManagement />} />
+                            <Route path='managers' element={<ManagersManagement />} />
+                            <Route path='volunteers' element={<VolunteersManagement />} />
+                            <Route path='workshops' element={<WorkshopsManagement />} />
+                            <Route path='jobfairdates' element={<JobFairDatesManagement />} />
+                            <Route path='feedback' element={<FeedbackManagement />} />
+                        </Route>
+
                         {token && role? 
                             <>
                                 <Route path={`/candidate`} element={<Dashboard />} >
