@@ -1,0 +1,85 @@
+.crud-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.crud-header {
+    margin-bottom: 30px;
+}
+
+.crud-header h1 {
+    font-size: 28px;
+    color: #1a202c;
+    margin: 0 0 10px 0;
+    font-weight: 700;
+}
+
+.crud-header p {
+    color: #718096;
+    font-size: 14px;
+    margin: 0;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.badge-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.badge-verified {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.badge-approved {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.badge-declined {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.badge-active {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.badge-inactive {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .crud-header h1 {
+        font-size: 24px;
+    }
+
+    .crud-header p {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .crud-container {
+        margin: 0;
+    }
+
+    .crud-header {
+        margin-bottom: 20px;
+    }
+
+    .crud-header h1 {
+        font-size: 20px;
+    }
+}
