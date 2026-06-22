@@ -59,7 +59,7 @@ function DashboardOverview() {
                 {stats.map((stat, index) => (
                     <div key={index} className="stat-card">
                         <div 
-                            className="stat-icon"
+                            className="stat-icon-admin"
                             style={{ 
                                 color: stat.color, 
                                 backgroundColor: stat.bgColor 
@@ -68,10 +68,10 @@ function DashboardOverview() {
                             {stat.icon}
                         </div>
                         <div className="stat-content">
-                            <h3 className="stat-value">{stat.value}</h3>
-                            <p className="stat-label">{stat.label}</p>
+                            <h3 className="stat-value-admin">{stat.value}</h3>
+                            <p className="stat-label-admin">{stat.label}</p>
                         </div>
-                        <div className="stat-trend">↑ 12%</div>
+                        <div className="stat-trend-admin">↑ 12%</div>
                     </div>
                 ))}
             </div>

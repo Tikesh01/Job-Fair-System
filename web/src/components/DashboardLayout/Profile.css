@@ -97,6 +97,22 @@
 .job-preference-add-row .job-preference-input{
     min-width: 0;
 }
+#about{
+    .gender-options{
+        display: flex;
+        width: 100%;
+        align-items: center;
+        gap: 2rem;
+    }
+    .gender-option{
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        border: 1px solid rgba(172, 170, 170, 0.712);
+        border-radius: 10px;
+        padding: 0.4rem 1rem;
+    }
+}
 
 @media(max-width: 768px) {
     .profile-grid{
@@ -127,6 +143,19 @@
     }
     .job-preference-add-row button{
         width: 100%;
+    }
+    #about{
+        .gender-options{
+            gap: 1rem;
+        }
+        .gender-option{
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid rgba(172, 170, 170, 0.712);
+            border-radius: 10px;
+            padding: 0.4rem 0.5rem;
+        }
     }
     #Links{
         .small-group{

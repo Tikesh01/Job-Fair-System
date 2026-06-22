@@ -2,7 +2,7 @@ import { FaBars, FaSearch, FaBell, FaUserCircle, FaCog } from 'react-icons/fa'
 import { useState } from 'react'
 import './AdminHeader.css'
 
-function AdminHeader({ adminName, onMenuToggle }) {
+function AdminHeader({ adminName }) {
     const [showProfileDropdown, setShowProfileDropdown] = useState(false)
 
     const handleLogout = () => {
@@ -15,12 +15,6 @@ function AdminHeader({ adminName, onMenuToggle }) {
 
     return (
         <header className="admin-header">
-            <div className="header-left">
-                <button className="menu-toggle" onClick={onMenuToggle}>
-                    <FaBars />
-                </button>
-            </div>
-
             <div className="header-center">
                 <div className="search-bar">
                     <FaSearch className="search-icon" />

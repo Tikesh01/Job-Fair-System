@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import './Footer.css';
 import api from '../api/axiosapi';
+import {getCookie} from "../utils/cookies.js"
 import { useNotification } from '../contexts/NotificationContext';
 import {FaStar} from  'react-icons/fa'
 
 export default function Footer() {
-
+  const role = getCookie('role')
   const [feedback, setFeedback] = useState({
     sender_name: '',
     sender_email: '',
@@ -41,7 +42,7 @@ export default function Footer() {
     }
   };
 
-  return (
+  return role!=='admin'?(
     <footer className="footer">
       <div className="footer-container">
         <div className="footer-content">
@@ -138,5 +139,5 @@ export default function Footer() {
         </div>
       </div>
     </footer>
-  );
+  ):null;
 }

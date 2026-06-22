@@ -8,7 +8,7 @@ import './AdminDashboard.css'
 function AdminDashboard() {
     const navigate = useNavigate()
     const location = useLocation()
-    const [sidebarOpen, setSidebarOpen] = useState(true)
+    const [sidebarOpen, setSidebarOpen] = useState(false)
     const [adminName, setAdminName] = useState('Admin')
 
     useEffect(() => {
@@ -27,17 +27,16 @@ function AdminDashboard() {
     }, [navigate])
 
     return (
-        <div className="admin-dashboard-container">
+        <div className= {`admin-dashboard-container ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
             <AdminSidebar 
                 isOpen={sidebarOpen} 
                 onToggle={() => setSidebarOpen(!sidebarOpen)}
                 currentPath={location.pathname}
             />
             
-            <div className={`admin-main-content ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+            <div className="admin-main-content">
                 <AdminHeader 
                     adminName={adminName}
-                    onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
                 />
                 
                 <div className="admin-content-area">

@@ -2,10 +2,14 @@ import { Link } from 'react-router-dom'
 import {
     FaChartBar, FaUsers, FaBuilding, FaGraduationCap,
     FaBriefcase, FaFileAlt, FaCalendarAlt, FaComments,
-    FaUserTie, FaWalking, FaCog, FaSignOutAlt, FaChevronDown
+    FaUserTie, FaWalking, FaCog, FaSignOutAlt, FaChevronDown,
+    FaTimesCircle,
+    FaHamburger,
+    FaTimes
 } from 'react-icons/fa'
 import './AdminSidebar.css'
 import { useState } from 'react'
+import api from "../../../api/axiosapi";
 
 function AdminSidebar({ isOpen, onToggle, currentPath }) {
     const [openMenu, setOpenMenu] = useState(null)
@@ -14,11 +18,9 @@ function AdminSidebar({ isOpen, onToggle, currentPath }) {
         setOpenMenu(openMenu === menu ? null : menu)
     }
 
-    const handleLogout = () => {
-        document.cookie = 'token=; path=/; max-age=0'
-        document.cookie = 'role=; path=/; max-age=0'
-        document.cookie = 'adminId=; path=/; max-age=0'
-        window.dispatchEvent(new Event('authUpdated'))
+    async function handleLogout(){
+        const resp = await api.post('/logout');
+    
         window.location.href = '/admin/login'
     }
 
@@ -28,7 +30,7 @@ function AdminSidebar({ isOpen, onToggle, currentPath }) {
     const menuItems = [
         {
             label: 'Dashboard',
-            path: '/admin/dashboard/overview',
+            path: '/admin/dashboard',
             icon: <FaChartBar />,
             exact: true
         },
@@ -112,9 +114,9 @@ function AdminSidebar({ isOpen, onToggle, currentPath }) {
         <>
             <aside className={`admin-sidebar ${isOpen ? 'open' : 'closed'}`}>
                 <div className="sidebar-header">
-                    <div className="sidebar-brand">
-                        <div className="brand-icon">⚙️</div>
+                    <div className="sidebar-toggle">
                         {isOpen && <h2>Admin Panel</h2>}
+                        <div className="brand-icon"  onClick={onToggle}>{isOpen?<FaTimes />:<FaHamburger />}</div>
                     </div>
                 </div>
 
@@ -172,7 +174,6 @@ function AdminSidebar({ isOpen, onToggle, currentPath }) {
                 </div>
             </aside>
 
-            {isOpen && <div className="sidebar-overlay" onClick={onToggle}></div>}
         </>
     )
 }

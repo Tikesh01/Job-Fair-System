@@ -45,7 +45,7 @@ export default function Navbar() {
     }
   };
 
-  return (
+  return role!=='admin'?(
     <nav className="navbar">
       <div className="navbar-container">
         <NavLink to="/" className="navbar-logo" onClick={closeMenu}>
@@ -105,5 +105,5 @@ export default function Navbar() {
         </button>
       </div>
     </nav>
-  );
+  ):null;
 }

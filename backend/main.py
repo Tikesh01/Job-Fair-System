@@ -65,6 +65,7 @@ db = Db(host=db_host, port=db_port, user=db_user, password=db_password,  databas
 secret_key = os.getenv('SECRET_KEY')
 algorithm = os.getenv('ALGORITHM')
 expiry_minutes = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES'))
+admin_expiry_minutes = int(os.getenv('ADMIN_ACCESS_TOKEN_EXPIRE_MINUTES'))
 
 
 def validate_email(email: str) -> bool:
@@ -74,7 +75,7 @@ def validate_email(email: str) -> bool:
     return bool(email_re.fullmatch(email))
 
 def validate_role(role:str):
-    all_roles = ["candidate", 'company', 'university']
+    all_roles = ["candidate", 'company', 'university','admin']
     if role in all_roles:
         return role.strip()
     else:
@@ -196,18 +197,17 @@ def login(loginObj:loginRequest):
         "role": role, 
         "email": email
     }
-    minutes = timedelta(minutes=expiry_minutes)
+    minutes = timedelta(minutes= expiry_minutes if role!='admin' else admin_expiry_minutes)
     access_token = create_access_token(payload=payload, expiry_minutes=minutes)
     response = JSONResponse({"message": "Login successful"})
-    response.set_cookie(key="token", value=access_token , secure=False, samesite="strict", max_age=3600)
-    response.set_cookie(key="role", value=role, secure=False, samesite="strict", max_age=3600)
-    response.set_cookie(key=f"{role}_id", value=user['user_id'], secure=False, samesite="strict", max_age=3600)
-    response.set_cookie(key="expiry_time", value=datetime.now()+minutes, secure=False, samesite="strict", max_age=3600)
+    response.set_cookie(key="token", value=access_token , secure=False, samesite="strict", max_age=minutes*60)
+    response.set_cookie(key="role", value=role, secure=False, samesite="strict", max_age=minutes*60)
+    response.set_cookie(key=f"{role}_id", value=user['user_id'], secure=False, samesite="strict", max_age=minutes*60)
+    response.set_cookie(key="expiry_time", value=datetime.now()+minutes, secure=False, samesite="strict", max_age=minutes*60)
     return response 
 
 @app.post('/logout')
-@require_roles("candidate","university","company")
-def logout(request:Request):
+def logout():
     response = JSONResponse({"message": "Logged out successfully"})
     response.delete_cookie("token")
     response.delete_cookie("role")
@@ -454,20 +454,7 @@ def add_feedback(fbk:feedback):
         raise HTTPException(status_code=400, detail=f"Can't Submit Feedback")
     
 
-################################### admin #############################################################
-@app.post("/admin/login")
-def admin_login(data:admin):
-    email = data.email
-    password = data.password
-    if not validate_email(email):
-        raise HTTPException(status_code=400, detail="Invalid Email")
-
-    admin = db.query("SELECT * FROM admin WHERE email = %s AND password = %s", params=(email, password))
-
-    if(len(admin) > 0):
-        return {"status":"ok","msg":"Log in successfull"}
-    
-    raise HTTPException(status_code=400, detail="User Not Exists")
+################################################ admin #############################################################
 
 ######################################## == Candidate == ################################################
 def get_candidate_joined_university(candidate_id):

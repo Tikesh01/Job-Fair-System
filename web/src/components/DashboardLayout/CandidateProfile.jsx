@@ -690,27 +690,29 @@ export default function CandidateProfile({candidateObj}) {
                                 <label htmlFor="dob"><FaCalendar />Date of Birth</label>
                                 <input type="date" name="date_of_birth" id="dob" value={candidate.date_of_birth || ""} onChange={handleProfileUpdate} className='profile-input'/>
                             </div>
-                            <div className="form-group small-group">
+                            <div className="form-group gender">
                                 <label htmlFor="gender"><FaUserAlt /> Gender</label>
-                                {genderList.map((g, index) => {
-                                    const inputId = `gender-${index}`;
+                                <div className="gender-options">
+                                    {genderList.map((g, index) => {
+                                        const inputId = `gender-${index}`;
 
-                                    return (
-                                        <div className="small-group" key={g}>
-                                            <input
-                                                type="radio"
-                                                name="gender"
-                                                id={inputId}
-                                                value={g}
-                                                className='profile-input'
-                                                checked={candidate.gender === g}
-                                                onChange={handleProfileUpdate}
-                                                disabled={!editable}
-                                            />
-                                            <label htmlFor={inputId}>{g}</label>
-                                        </div>
-                                    );
-                                })}
+                                        return (
+                                            <div className="gender-option" key={g}>
+                                                <input
+                                                    type="radio"
+                                                    name="gender"
+                                                    id={inputId}
+                                                    value={g}
+                                                    className='profile-input'
+                                                    checked={candidate.gender === g}
+                                                    onChange={handleProfileUpdate}
+                                                    disabled={!editable}
+                                                />
+                                                <label htmlFor={inputId}>{g}</label>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
                             <div className="form-group">
                                 <label htmlFor="aboutMe"><FaBook /> Your Bio</label>

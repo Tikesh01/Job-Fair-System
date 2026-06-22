@@ -1,8 +1,8 @@
 .admin-sidebar {
     position: fixed;
     left: 0;
-    top: 0;
-    height: 100vh;
+    top: 60px;
+    height: calc(100vh - 60px);
     width: 280px;
     background: linear-gradient(180deg, #1a202c 0%, #2d3748 100%);
     color: #e2e8f0;
@@ -23,13 +23,14 @@
     background: rgba(0, 0, 0, 0.2);
 }
 
-.sidebar-brand {
+.sidebar-toggle {
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: space-between;
     padding: 10px;
     border-radius: 8px;
     background: rgba(66, 153, 225, 0.1);
+    cursor: pointer;
 }
 
 .brand-icon {
@@ -68,6 +69,7 @@
     text-align: left;
     font-size: 14px;
     font-family: inherit;
+    min-height: 44px;
 }
 
 .nav-icon {
@@ -175,10 +177,6 @@
     border-color: rgba(252, 129, 129, 0.6);
 }
 
-.sidebar-overlay {
-    display: none;
-}
-
 /* Scrollbar styling */
 .admin-sidebar::-webkit-scrollbar {
     width: 6px;
@@ -199,62 +197,43 @@
 
 /* Responsive Design */
 @media (max-width: 1024px) {
-    .admin-sidebar {
-        width: 70px;
+    .admin-sidebar{
+        width: 220px;
     }
-
     .admin-sidebar.closed {
         width: 70px;
-    }
-
-    .sidebar-brand h2 {
-        display: none;
-    }
-
-    .nav-label,
-    .sidebar-brand h2 {
-        display: none;
-    }
-
-    .submenu,
-    .sidebar-footer {
-        display: none;
-    }
-
-    .sidebar-overlay {
-        display: none;
     }
 }
 
 @media (max-width: 768px) {
+    .admin-sidebar{
+        width: 200px;
+    }
+}
+
+@media (max-width: 500px) {
     .admin-sidebar {
-        width: 0;
-        opacity: 0;
-        pointer-events: none;
-    }
-
-    .admin-sidebar.open {
         width: 250px;
-        opacity: 1;
-        pointer-events: all;
     }
 
-    .sidebar-overlay {
-        display: block;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.3s ease;
-        z-index: 999;
+    .admin-sidebar.closed {
+        width: 55px;
     }
-
-    .admin-sidebar.open ~ .sidebar-overlay {
-        opacity: 1;
-        pointer-events: all;
+    .sidebar-header {
+        padding: 10px;
+    }
+    .sidebar-toggle {
+        padding: 7px;
+    }
+    .nav-item,
+    .submenu-toggle {
+        padding: 8px 12px;
+    }
+    .nav-item.active,
+    .submenu-toggle.active {
+        padding-left: 12px;
+    }
+    .sidebar-footer {
+        padding: 10px;
     }
 }

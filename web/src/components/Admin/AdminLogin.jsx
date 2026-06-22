@@ -36,27 +36,24 @@ function AdminLogin() {
 
         try {
             setLoading(true)
-            const response = await api.post('/admin/login', {
+            const response = await api.post('/login', {
+                role: 'admin',
                 email: email,
                 password: password
             })
 
-            if (response.data.success) {
-                // Store token and role in cookie
-                document.cookie = `token=${response.data.token}; path=/; max-age=86400`
-                document.cookie = `role=admin; path=/; max-age=86400`
-                document.cookie = `adminId=${response.data.admin_id}; path=/; max-age=86400`
+            if (response.status == 200) {
                 
                 // Notify browser about auth update
                 window.dispatchEvent(new Event('authUpdated'))
                 
-                notify('Admin login successful!', 'success')
+                notify('success','Admin login successful!')
                 navigate('/admin/dashboard')
             }
         } catch (error) {
             console.error('Login error:', error)
             const errorMsg = error.response?.data?.message || 'Login failed. Please try again.'
-            notify(errorMsg, 'error')
+            notify('error',errorMsg)
             setErrors({ form: errorMsg })
         } finally {
             setLoading(false)

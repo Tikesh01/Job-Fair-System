@@ -1,9 +1,10 @@
 .admin-header {
     position: fixed;
+    z-index: 200;
     top: 0;
-    left: 280px;
+    left: 0;
     right: 0;
-    height: 70px;
+    height: 60px;
     background: white;
     border-bottom: 1px solid #e2e8f0;
     display: flex;
@@ -13,16 +14,6 @@
     z-index: 100;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     transition: left 0.3s ease;
-}
-
-.admin-dashboard-container.sidebar-closed .admin-header {
-    left: 80px;
-}
-
-@media (max-width: 1024px) {
-    .admin-header {
-        left: 70px;
-    }
 }
 
 @media (max-width: 768px) {
@@ -37,30 +28,6 @@
     align-items: center;
 }
 
-.menu-toggle {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 20px;
-    color: #2d3748;
-    padding: 8px;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    transition: all 0.3s ease;
-}
-
-.menu-toggle:hover {
-    background: #f7fafc;
-    color: #1a202c;
-}
-
-@media (max-width: 768px) {
-    .menu-toggle {
-        display: flex;
-    }
-}
 
 .header-center {
     flex: 1;
@@ -74,7 +41,7 @@
     background: #f7fafc;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
-    padding: 8px 12px;
+    /* padding: 8px 12px; */
     max-width: 300px;
     transition: all 0.3s ease;
 }
@@ -107,12 +74,6 @@
 .search-bar input:disabled {
     cursor: not-allowed;
     opacity: 0.6;
-}
-
-@media (max-width: 1024px) {
-    .header-center {
-        display: none;
-    }
 }
 
 .header-right {
@@ -265,19 +226,6 @@
 @media (max-width: 768px) {
     .admin-header {
         padding: 0 15px;
-        height: 60px;
-    }
-
-    .header-center {
-        display: none;
-    }
-
-    .header-right {
-        gap: 15px;
-    }
-
-    .admin-name {
-        display: none;
     }
 
     .profile-btn {
@@ -292,6 +240,9 @@
 @media (max-width: 480px) {
     .admin-header {
         padding: 0 10px;
+    }
+    .admin-name {
+        display: none;
     }
 
     .notification-btn {
