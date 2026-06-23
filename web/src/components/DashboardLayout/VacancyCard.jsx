@@ -1,4 +1,4 @@
-import {  FaBriefcase, FaUsers, FaCheckCircle, FaTasks, FaExpand, FaCompress, FaBuilding, FaCalendarCheck, FaRupeeSign, FaMoneyBill, FaCalendarAlt, FaRegHeart, FaChevronCircleDown, FaChevronCircleUp } from "react-icons/fa"
+import {  FaBriefcase, FaUsers, FaCheckCircle, FaTasks, FaExpand, FaCompress, FaBuilding, FaCalendarCheck, FaRupeeSign, FaMoneyBill, FaCalendarAlt, FaRegHeart, FaChevronCircleDown, FaChevronCircleUp, FaShare, FaShareAlt } from "react-icons/fa"
 import { getCookie } from '../../utils/cookies';
 import { useEffect, useState } from "react"
 import './VacancyCard.css';
@@ -53,6 +53,18 @@ export default function VacancyCard({
     const handleRemove = () => {
         onRemove(vacancy.job_role_id)
     }
+    const [textToCopy, setTextToCopy] = useState(`http://localhost:5173/vacancy/details/${vacancy.job_role_id}`);
+    const [isCopied, setIsCopied] = useState(false);
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(textToCopy);
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000); 
+
+        } catch (err) {
+            console.error("Failed to copy text: ", err);
+        }
+    };
     return (
         <div className={`vacancy-card ${expanded ? 'expanded' : ''}`} style={expanded?null:height} >
             <div className="row vacancy-card-header">
@@ -102,6 +114,12 @@ export default function VacancyCard({
                                 {onRemove &&
                                     <button className="delete" onClick={handleRemove}>{removeButtonLabel}</button>
                                 }
+                                <button 
+                                    onClick={handleCopy}
+                                    className="update"
+                                >
+                                    {isCopied ? <FaCheckCircle /> : <FaShareAlt />}
+                                </button>
                             </>
                             :null
                         }
