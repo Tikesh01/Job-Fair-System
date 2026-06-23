@@ -2,9 +2,6 @@ import {  FaBriefcase, FaUsers, FaCheckCircle, FaTasks, FaExpand, FaCompress, Fa
 import { getCookie } from '../../utils/cookies';
 import { useEffect, useState } from "react"
 import './VacancyCard.css';
-import api from "../../api/axiosapi";
-
-const companyCache = new Map();
 
 export default function VacancyCard({
     vacancy,
@@ -18,9 +15,10 @@ export default function VacancyCard({
     showApplyButton,
     removeButtonLabel = 'Remove',
     statusText,
-    height={'maxHeight' : '250px'}
+    height={'maxHeight' : '250px'},
+    expand = false
 }) {
-    const [expanded, setExpanded] = useState(false)
+    const [expanded, setExpanded] = useState(expand)
     const role = getCookie('role')
     const userId =  getCookie(`company_id`)
     const canShowSelectButton = showSelectButton ?? (role === 'candidate')
@@ -56,10 +54,10 @@ export default function VacancyCard({
         onRemove(vacancy.job_role_id)
     }
     return (
-        <div className={`vacancy-card ${expanded ? 'expanded' : ''}`} style={expanded?null:height}>
+        <div className={`vacancy-card ${expanded ? 'expanded' : ''}`} style={expanded?null:height} >
             <div className="row vacancy-card-header">
                 <div className="vacancy-title-section">
-                    <h2><FaBriefcase className="vacancy-icon" /> {vacancy.job_role_title}</h2>
+                    <h2><FaBriefcase className="vacancy-icon" /> <a href = {`/vacancy/details/${vacancy.job_role_id}`} target="_blank"> {vacancy.job_role_title} </a></h2>
                     <span className={`job-type-badge ${vacancy.job_type}`}>
                         {vacancy.job_type}&nbsp;
                         in {vacancy.job_location}

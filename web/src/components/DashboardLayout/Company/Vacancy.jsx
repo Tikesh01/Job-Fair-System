@@ -230,24 +230,29 @@ export default function Vacancy(){
                         </div>
                     </div>
                     
-                    <div className="vacancy-card-grid">
-                        {jobRoleList && jobRoleList.length > 0
-                            ? jobRoleList.map(jobRoleObj => (
-                                <div className="card" key={jobRoleObj.job_role_id || jobRoleObj.id} > 
-                                    <VacancyCard 
-                                        key={jobRoleObj.job_role_id || jobRoleObj.id} 
-                                        vacancy={jobRoleObj} 
-                                        onDelete={handleDeleteVacancy}
-                                        onUpdate={handleUpdateVacancy}
-                                        onPostToggle={handlePostToggle}
-                                    />
-                                </div>
-                            ))
-                            :<div className="no-vacancies">
-                                <FaInfoCircle /> 
-                                <span className="info-span">No Roles Created Yet</span>
-                            </div>
-                        }
+                    {jobRoleList && jobRoleList.length > 0
+                        ?<div className="vacancy-card-grid">
+                            {jobRoleList && jobRoleList.length > 0
+                                ? jobRoleList.map(jobRoleObj => (
+                                    <div className="card" key={jobRoleObj.job_role_id || jobRoleObj.id} > 
+                                        <VacancyCard 
+                                            key={jobRoleObj.job_role_id || jobRoleObj.id} 
+                                            vacancy={jobRoleObj} 
+                                            onDelete={handleDeleteVacancy}
+                                            onUpdate={handleUpdateVacancy}
+                                            onPostToggle={handlePostToggle}
+                                        />
+                                    </div>
+                                ))
+                                :null
+                            }
+                        </div>
+                    :<div className="no-vacancies">
+                        <FaInfoCircle /> 
+                        <span className="info-span">No Roles Created Yet</span>
+                    </div>}
+                    <div className="vacancy-list-footer">
+                        <p className="info-span"><FaInfoCircle /> Note :- Once Posted Vacancy cannot be deleted or Edited, but can be closed </p>
                     </div>
                 </div>
 

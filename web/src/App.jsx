@@ -10,6 +10,7 @@ import Login from './components/Login'
 import Home from './components/Home';
 import About from './components/NavMenu/About';
 import Job from './components/NavMenu/Job';
+import VacancyDetails from './components/VacancyDetails';
 import Contact from './components/NavMenu/Contact';
 import JobfairDates from './components/NavMenu/JobfairDates';
 import Dashboard from './components/dashboard';
@@ -71,6 +72,7 @@ function App() {
                         <Route path='/about' element={<About />} />
                         <Route path='/contact' element={<Contact />} />
                         <Route path='/imp-dates' element={<JobfairDates />} />
+                        <Route path='/vacancy/details/:vacancyId' element={<VacancyDetails />} />
                         
                         {/* Admin Routes */}
                         <Route path='/admin/login' element={<AdminLogin />} />

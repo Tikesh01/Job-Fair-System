@@ -251,7 +251,7 @@ export default function UniversityProfile({ urstObj }) {
                             <div className="stat-card-modern">
                                 <FaUserTie className="stat-icon" />
                                 <div className="stat-info">
-                                    <span className="stat-label">Students</span>
+                                    <span className="stat-label">Candidates</span>
                                     <strong className="stat-value">{university.student_count || 0}</strong>
                                 </div>
                             </div>

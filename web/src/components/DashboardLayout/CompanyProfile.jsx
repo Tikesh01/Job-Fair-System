@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FaBriefcase, FaCheckCircle, FaCheckDouble, FaInfoCircle, FaTimesCircle, FaCalendarAlt, FaEnvelope, FaPhone,FaLock,FaBook, FaCodeBranch, FaCodepen, FaMapMarked, FaMapMarkerAlt, FaSearchLocation, FaUserEdit, FaCross, FaSave, FaRegSave, FaSignOutAlt, FaUserTie, FaBuilding, FaRegBuilding} from "react-icons/fa";
+import { FaBriefcase, FaCheckCircle, FaCheckDouble, FaInfoCircle, FaTimesCircle, FaCalendarAlt, FaEnvelope, FaPhone,FaLock,FaBook, FaCodeBranch, FaCodepen, FaMapMarked, FaMapMarkerAlt, FaSearchLocation, FaUserEdit, FaCross, FaSave, FaRegSave, FaSignOutAlt, FaUserTie, FaBuilding, FaRegBuilding, FaInternetExplorer, FaEnvelopeSquare} from "react-icons/fa";
 import api from '../../api/axiosapi';
 import { useNotification } from '../../contexts/NotificationContext';
 import { useNavigate } from 'react-router-dom';
@@ -210,6 +210,11 @@ export default function CompanyProfile({companyObj}){
                             <div className="form-group">
                                 <label htmlFor="password"><FaLock /> Password <small>(readonly)</small></label>
                                 <input id="password" type="password" readOnly className='profile-input' value={company.password} />
+                                <span className="error-massage"></span>
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="contact_email"><FaEnvelopeSquare />Secondary/Contact Email</label>
+                                <input onChange={handleProfileUpdate} id="contact_email" type='text' name='contact_email' className='profile-input' value={company.contact_email?company.contact_email:""} placeholder='Add Secondary Email'  />
                                 <span className="error-massage"></span>
                             </div>
                             <div className="form-group">

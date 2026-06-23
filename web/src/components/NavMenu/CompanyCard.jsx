@@ -70,7 +70,7 @@ export default function CompanyCard({ company }) {
             <div className="row company-card-contact">
                 <div>
                     <FaEnvelope className="info-icon" />
-                    <span>{company.email}</span>
+                    <span>{company.contact_email || company.email || ""}</span>
                 </div>
                 <div>
                     <FaPhoneAlt className="info-icon" />

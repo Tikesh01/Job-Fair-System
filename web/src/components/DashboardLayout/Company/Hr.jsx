@@ -171,9 +171,9 @@ export default function Hr() {
           </div>
         </div>
 
-        <div className="hr-card-grid">
-          {hrList.length > 0 ? (
-            hrList.map((hr) => (
+        {hrList.length > 0 ? 
+          <div className="hr-card-grid">
+            {hrList.map((hr) => (
               <div className="card" key={hr.id}>
                 <HrCard
                   hr={hr}
@@ -182,14 +182,14 @@ export default function Hr() {
                   onUpdate={handleUpdateHr}
                 />
               </div>
-            ))
-          ) : (
-            <div className="no-vacancies">
-              <FaInfoCircle />
-              <span className="info-span">No HR Contacts Created Yet</span>
-            </div>
-          )}
-        </div>
+            ))}
+          </div>
+          :<div className="no-vacancies">
+            <FaInfoCircle />
+            <span className="info-span">No HR Contacts Created Yet</span>
+          </div>
+        }
+       
       </div>
 
       <div className="hr-demo-wrapper">
