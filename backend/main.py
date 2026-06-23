@@ -417,12 +417,25 @@ def get_posted_vancancies(request:Request):
         raise HTTPException(status_code=404, detail='No Vacancies Found')
     return vacancy_list 
 
+@app.get("/vacancy")
+def get_vacancy_details(job_role_id:int):
+    try:
+        rs = db.query("SELECT * FROM job_role jr WHERE jr.job_role_id=%s", params=(job_role_id, ))
+
+        if len(rs)<=0:
+            raise HTTPException(status_code=40, detail="NO Vacancy Found")
+        
+        return rs[0]
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Something Went Wrong!")
+    
 @app.get("/companies", response_model=list)
 def get_verified_company_list():
     company_list = db.query(
         """
         SELECT
-            c.avatar,c.name, c.is_verified, c.is_active, c.email, c.contact,c.city, c.state,c.about,c.address, c.job_application_count, c.company_type
+            c.avatar,c.name, c.is_verified, c.is_active, c.email, c.contact_email, c.contact,c.city, c.state,c.about,c.address, c.job_application_count, c.company_type
         FROM company c
         WHERE c.is_verified = 1
         ORDER BY c.is_active DESC, c.job_application_count DESC, c.created_at DESC
@@ -434,6 +447,27 @@ def get_verified_company_list():
 
     return company_list
 
+@app.get("/company")
+def get_company_details(company_id:int):
+    try:
+        rs = db.query(
+            """
+            SELECT
+                c.avatar,c.name, c.is_verified, c.is_active, c.email, c.contact_email, c.contact,c.city, c.state,c.about,c.address, c.job_application_count, c.company_type
+            FROM company c
+            WHERE c.company_id = %s
+            """,
+            params=(company_id, )
+        )
+
+        if len(rs)<=0:
+            raise HTTPException(status_code=40, detail="NO Company Found")
+        
+        return rs[0]
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Something Went Wrong!")
+    
 @app.post("/feedback")
 def add_feedback(fbk:feedback):
     try:
